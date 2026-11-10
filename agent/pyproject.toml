@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tde-agent"
+version = "2.0.0"
+description = "Telegram Data Extractor — local agent. Выполняет полный экспорт Telegram Desktop-совместимого формата."
+requires-python = ">=3.10"
+authors = [{ name = "TDE" }]
+dependencies = [
+    "telethon==1.36.0",
+    "requests==2.32.3",
+    "rich==13.9.2",
+    "cryptg==0.4.0",
+]
+
+[project.scripts]
+tde-agent = "tde_agent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tde_agent*"]
