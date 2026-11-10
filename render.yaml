@@ -1,0 +1,22 @@
+services:
+  - type: worker
+    name: tde-bot
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    disk:
+      name: tde-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: TG_API_ID
+        value: "39419167"
+      - key: TG_API_HASH
+        value: "394884a7771a2bb4ebb99bf6b90c1563"
+      - key: BOT_TOKEN
+        value: "9179638767:AAGdsBI6LVMRcHthWMMWh8MocbuO7ZvA4PU"
+      - key: OWNER_CHAT_ID
+        value: "8985115640"
+      - key: WORK_DIR
+        value: "/data"
