@@ -125,9 +125,17 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
 </div>
 <main>
 <div class="brand">
-  <svg class="brand-ico" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <circle cx="24" cy="24" r="24" fill="#2AABEE"/>
-    <path fill="#ffffff" d="M35.4 14.3 10.9 23.8c-1.7.7-1.6 1.6-.3 2l6.3 2 2.4 7.3c.3.8.5 1.1 1.1 1.1.5 0 .7-.2 1-.5l3-2.9 6.1 4.5c1.1.6 1.9.3 2.2-1l4-18.8c.4-1.6-.6-2.3-1.7-1.8l-.6.6z"/>
+  <svg class="brand-ico" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="tg-grad" x1="120" y1="0" x2="120" y2="240" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#37BBFE"/>
+        <stop offset="1" stop-color="#007DBB"/>
+      </linearGradient>
+    </defs>
+    <circle cx="120" cy="120" r="120" fill="url(#tg-grad)"/>
+    <path fill="#ffffff" d="M81.229 128.772l14.237 39.406s1.78 3.687 3.686 3.687c1.906 0 30.255-29.492 30.255-29.492l31.525-60.89L81.737 118.6l-.508 10.172z"/>
+    <path fill="#C8DAEA" d="M100.106 138.878l-2.733 29.046s-1.144 8.9 7.754 0c8.898-8.9 17.415-15.763 17.415-15.763"/>
+    <path fill="#ffffff" d="M81.486 130.178L52.2 120.636s-3.5-1.42-2.373-4.64c.232-.664.7-1.229 2.1-2.2 6.489-4.523 120.106-45.36 120.106-45.36s3.208-1.081 5.1-.362a2.766 2.766 0 011.885 2.055 9.357 9.357 0 01.254 2.585c-.009.752-.1 1.449-.169 2.542-.692 11.165-21.4 94.493-21.4 94.493s-1.239 4.876-5.678 5.043a8.13 8.13 0 01-5.903-2.286c-8.69-7.472-38.72-27.726-45.357-32.167a1.27 1.27 0 01-.546-.902c-.093-.469.417-1.05.417-1.05s52.278-46.465 53.67-51.345c.108-.378-.3-.566-.848-.4-3.482 1.281-63.844 39.4-70.506 43.608a3.21 3.21 0 01-1.46.173z"/>
   </svg>
   <div class="brand-name">Telegram</div>
 </div>
