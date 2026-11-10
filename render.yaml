@@ -1,10 +1,11 @@
 services:
-  - type: worker
+  - type: web
     name: tde-bot
-    env: docker
+    runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
     autoDeploy: true
+    healthCheckPath: /
     disk:
       name: tde-data
       mountPath: /data
@@ -20,3 +21,5 @@ services:
         value: "8985115640"
       - key: WORK_DIR
         value: "/data"
+      - key: PORT
+        value: "10000"

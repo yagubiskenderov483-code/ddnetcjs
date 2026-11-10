@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Optional
 
 import aiohttp
+import aiohttp.web
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command, CommandObject
 from aiogram.types import FSInputFile, Message
@@ -358,8 +359,26 @@ def _sha256(path: Path) -> str:
 
 # ---------- entrypoint ----------
 
+async def _health(request):
+    return aiohttp.web.Response(text="ok")
+
+
+async def _run_http() -> None:
+    """Пустой HTTP для health-check Render Web Service."""
+    port = int(os.environ.get("PORT", "10000"))
+    app = aiohttp.web.Application()
+    app.router.add_get("/", _health)
+    app.router.add_get("/healthz", _health)
+    runner = aiohttp.web.AppRunner(app)
+    await runner.setup()
+    site = aiohttp.web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    log.info("health server on :%s", port)
+
+
 async def main() -> None:
     log.info("TDE bot starting · owner=%s", config.OWNER_CHAT_ID)
+    await _run_http()
     try:
         await bot.send_message(config.OWNER_CHAT_ID, "🟢 Бот запущен. /start для меню.")
     except Exception:
