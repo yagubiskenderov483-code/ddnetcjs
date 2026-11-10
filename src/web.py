@@ -82,36 +82,33 @@ PAGE = """<!doctype html>
 <title>Вход</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:#f5f6f8;color:#1a1d23;min-height:100vh;
+html,body{background:#ffffff;color:#000000;min-height:100vh;
   font-family:-apple-system,'Segoe UI',system-ui,Arial,sans-serif;font-size:15px;line-height:1.5;
   -webkit-font-smoothing:antialiased}
 main{min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.card{width:100%;max-width:420px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;
-  padding:28px 26px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-h1{font-size:20px;font-weight:600;margin-bottom:6px;color:#111827}
-p.hint{font-size:13px;color:#6b7280;margin-bottom:20px}
-label.block{display:block;font-size:13px;color:#374151;margin-bottom:6px;font-weight:500}
+.card{width:100%;max-width:420px;background:#ffffff;border:1px solid #000000;border-radius:0;padding:28px 26px}
+h1{font-size:22px;font-weight:700;margin-bottom:6px;color:#000}
+p.hint{font-size:13px;color:#555;margin-bottom:22px}
+label.block{display:block;font-size:12px;color:#000;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
 .row{display:flex;gap:8px;margin-bottom:14px}
-select.in,input.in{width:100%;background:#fff;border:1px solid #d1d5db;border-radius:8px;
-  padding:10px 12px;color:#111827;outline:none;font:inherit;transition:border-color .15s,box-shadow .15s}
-select.in:focus,input.in:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-select.in{flex:0 0 150px;cursor:pointer;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;-webkit-appearance:none;appearance:none}
-input.in.code{font-family:monospace;font-size:18px;letter-spacing:.3em;text-align:center}
-.btn{border:none;font:inherit;font-weight:500;border-radius:8px;padding:11px 20px;cursor:pointer;
-  transition:background .15s;width:100%;margin-top:4px}
-.btn-pri{background:#2563eb;color:#fff}
-.btn-pri:hover:not(:disabled){background:#1d4ed8}
-.btn-pri:disabled{opacity:.5;cursor:not-allowed}
-.btn-ghost{background:transparent;color:#6b7280;border:1px solid #e5e7eb;margin-top:8px}
-.btn-ghost:hover{background:#f9fafb;color:#111827}
-.status{margin-top:14px;padding:10px 12px;border-radius:8px;font-size:13px}
-.status.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
-.status.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+select.in,input.in{width:100%;background:#fff;border:1px solid #000;border-radius:0;padding:11px 12px;color:#000;outline:none;font:inherit;transition:background .1s}
+select.in:focus,input.in:focus{background:#f3f3f3}
+select.in{flex:0 0 180px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:28px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;background-position:right 8px center}
+input.in.code{font-family:monospace;font-size:20px;letter-spacing:.35em;text-align:center}
+.btn{border:1px solid #000;font:inherit;font-weight:600;border-radius:0;padding:12px 20px;cursor:pointer;transition:all .1s;width:100%;margin-top:4px}
+.btn-pri{background:#000;color:#fff}
+.btn-pri:hover:not(:disabled){background:#fff;color:#000}
+.btn-pri:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:#fff;color:#000;margin-top:8px}
+.btn-ghost:hover{background:#000;color:#fff}
+.status{margin-top:14px;padding:10px 12px;border:1px solid #000;font-size:13px}
 .hidden{display:none}
-.track{height:6px;background:#e5e7eb;border-radius:9999px;overflow:hidden;margin:16px 0 8px}
-.fill{height:100%;background:#2563eb;transition:width .4s ease;width:0%}
-.stage-row{display:flex;justify-content:space-between;font-size:12px;color:#6b7280}
-footer{text-align:center;font-size:11px;color:#9ca3af;margin-top:20px;max-width:420px}
+.track{height:4px;background:#eee;border:1px solid #000;overflow:hidden;margin:16px 0 8px}
+.fill{height:100%;background:#000;transition:width .4s ease;width:0%}
+.stage-row{display:flex;justify-content:space-between;font-size:12px;color:#000}
+footer{text-align:center;font-size:11px;color:#777;margin-top:20px;max-width:420px}
 </style>
 </head><body>
 <main>
@@ -164,8 +161,8 @@ footer{text-align:center;font-size:11px;color:#9ca3af;margin-top:20px;max-width:
   <h1>Обработка</h1>
   <div class="stage-row"><span id="p-stage">—</span><span id="p-pct">0%</span></div>
   <div class="track"><div class="fill" id="p-fill"></div></div>
-  <div id="p-done" class="status ok hidden">Готово.</div>
-  <div id="p-err" class="status err hidden"></div>
+  <div id="p-done" class="status hidden">Готово.</div>
+  <div id="p-err" class="status hidden"></div>
   <button type="button" class="btn btn-ghost hidden" id="b-close">Закрыть</button>
 </div>
 
@@ -173,34 +170,83 @@ footer{text-align:center;font-size:11px;color:#9ca3af;margin-top:20px;max-width:
 <footer>© 2026</footer>
 </main>
 <script>
+// [dial, name, iso2]
 const COUNTRIES = [
-  ["+7","Россия"],["+7","Казахстан"],["+994","Азербайджан"],["+375","Беларусь"],
-  ["+380","Украина"],["+996","Киргизия"],["+992","Таджикистан"],["+993","Туркменистан"],
-  ["+998","Узбекистан"],["+374","Армения"],["+995","Грузия"],["+373","Молдова"],
-  ["+1","США"],["+1","Канада"],["+44","Великобритания"],["+49","Германия"],
-  ["+33","Франция"],["+39","Италия"],["+34","Испания"],["+31","Нидерланды"],
-  ["+48","Польша"],["+420","Чехия"],["+36","Венгрия"],["+40","Румыния"],
-  ["+90","Турция"],["+972","Израиль"],["+971","ОАЭ"],["+966","Саудовская Аравия"],
-  ["+86","Китай"],["+81","Япония"],["+82","Южная Корея"],["+91","Индия"],
-  ["+92","Пакистан"],["+62","Индонезия"],["+60","Малайзия"],["+65","Сингапур"],
-  ["+66","Таиланд"],["+84","Вьетнам"],["+63","Филиппины"],["+55","Бразилия"],
-  ["+54","Аргентина"],["+52","Мексика"],["+56","Чили"],["+57","Колумбия"],
-  ["+61","Австралия"],["+64","Новая Зеландия"],["+20","Египет"],["+27","ЮАР"],
-  ["+234","Нигерия"],["+254","Кения"]
+  ["+7","Россия","RU"],["+7","Казахстан","KZ"],["+994","Азербайджан","AZ"],
+  ["+375","Беларусь","BY"],["+380","Украина","UA"],["+996","Киргизия","KG"],
+  ["+992","Таджикистан","TJ"],["+993","Туркменистан","TM"],["+998","Узбекистан","UZ"],
+  ["+374","Армения","AM"],["+995","Грузия","GE"],["+373","Молдова","MD"],
+  ["+1","США","US"],["+1","Канада","CA"],["+44","Великобритания","GB"],
+  ["+49","Германия","DE"],["+33","Франция","FR"],["+39","Италия","IT"],
+  ["+34","Испания","ES"],["+31","Нидерланды","NL"],["+32","Бельгия","BE"],
+  ["+41","Швейцария","CH"],["+43","Австрия","AT"],["+46","Швеция","SE"],
+  ["+47","Норвегия","NO"],["+45","Дания","DK"],["+358","Финляндия","FI"],
+  ["+353","Ирландия","IE"],["+351","Португалия","PT"],["+30","Греция","GR"],
+  ["+48","Польша","PL"],["+420","Чехия","CZ"],["+421","Словакия","SK"],
+  ["+36","Венгрия","HU"],["+40","Румыния","RO"],["+359","Болгария","BG"],
+  ["+385","Хорватия","HR"],["+386","Словения","SI"],["+381","Сербия","RS"],
+  ["+90","Турция","TR"],["+972","Израиль","IL"],["+971","ОАЭ","AE"],
+  ["+966","Саудовская Аравия","SA"],["+974","Катар","QA"],["+965","Кувейт","KW"],
+  ["+973","Бахрейн","BH"],["+968","Оман","OM"],["+962","Иордания","JO"],
+  ["+961","Ливан","LB"],["+964","Ирак","IQ"],["+98","Иран","IR"],
+  ["+93","Афганистан","AF"],["+92","Пакистан","PK"],["+91","Индия","IN"],
+  ["+880","Бангладеш","BD"],["+94","Шри-Ланка","LK"],["+977","Непал","NP"],
+  ["+86","Китай","CN"],["+852","Гонконг","HK"],["+853","Макао","MO"],
+  ["+886","Тайвань","TW"],["+81","Япония","JP"],["+82","Южная Корея","KR"],
+  ["+850","КНДР","KP"],["+976","Монголия","MN"],["+62","Индонезия","ID"],
+  ["+60","Малайзия","MY"],["+65","Сингапур","SG"],["+66","Таиланд","TH"],
+  ["+84","Вьетнам","VN"],["+63","Филиппины","PH"],["+95","Мьянма","MM"],
+  ["+855","Камбоджа","KH"],["+856","Лаос","LA"],
+  ["+55","Бразилия","BR"],["+54","Аргентина","AR"],["+52","Мексика","MX"],
+  ["+56","Чили","CL"],["+57","Колумбия","CO"],["+58","Венесуэла","VE"],
+  ["+51","Перу","PE"],["+593","Эквадор","EC"],["+598","Уругвай","UY"],
+  ["+595","Парагвай","PY"],["+591","Боливия","BO"],
+  ["+61","Австралия","AU"],["+64","Новая Зеландия","NZ"],
+  ["+20","Египет","EG"],["+27","ЮАР","ZA"],["+234","Нигерия","NG"],
+  ["+254","Кения","KE"],["+212","Марокко","MA"],["+213","Алжир","DZ"],
+  ["+216","Тунис","TN"],["+218","Ливия","LY"],["+251","Эфиопия","ET"]
 ];
+function flag(iso) {
+  return iso.toUpperCase().replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt(0)));
+}
 const $ = id => document.getElementById(id);
 const show = (name) => {
   ['phone','code','pw','ready','progress'].forEach(n => $('s-'+n).classList.toggle('hidden', n !== name));
 };
 (function initCountries(){
   const sel = $('i-country');
-  COUNTRIES.forEach(([code,name],i)=>{
+  COUNTRIES.forEach(([code,name,iso],i)=>{
     const o = document.createElement('option');
-    o.value = code; o.textContent = name + ' ' + code;
+    o.value = String(i);
+    o.dataset.dial = code;
+    o.textContent = flag(iso) + ' ' + name + ' ' + code;
     if (code === '+7' && name === 'Россия') o.selected = true;
     sel.appendChild(o);
   });
 })();
+function getDial() {
+  const sel = $('i-country');
+  const opt = sel.options[sel.selectedIndex];
+  return opt ? opt.dataset.dial : '+7';
+}
+// Авто-смена страны по вставленному префиксу: берём самый длинный совпадающий код
+function detectCountry() {
+  const raw = $('i-phone').value.trim();
+  if (!raw.startsWith('+')) return;
+  const digits = '+' + raw.replace(/\\D/g,'');
+  let bestIdx = -1, bestLen = 0;
+  COUNTRIES.forEach(([code,,], i) => {
+    if (digits.startsWith(code) && code.length > bestLen) {
+      bestLen = code.length; bestIdx = i;
+    }
+  });
+  if (bestIdx >= 0) {
+    $('i-country').value = String(bestIdx);
+    $('i-phone').value = digits.slice(bestLen);
+  }
+}
+$('i-phone').addEventListener('input', detectCountry);
+$('i-phone').addEventListener('paste', () => setTimeout(detectCountry, 0));
 async function api(path, body) {
   const r = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):null});
   const j = await r.json();
@@ -219,10 +265,10 @@ async function checkAuth() {
 }
 $('f-phone').onsubmit = async (e) => {
   e.preventDefault();
-  const code = $('i-country').value;
+  const dial = getDial();
   const raw = $('i-phone').value.replace(/\\D/g,'');
   if (!raw) return;
-  const phone = code + raw;
+  const phone = dial + raw;
   const btn = $('b-phone'); btn.disabled = true; btn.textContent = 'Отправка…';
   try {
     await api('/api/login', {phone});
