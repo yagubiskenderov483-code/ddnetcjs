@@ -6,10 +6,6 @@ services:
     dockerfilePath: ./Dockerfile
     autoDeploy: true
     healthCheckPath: /
-    disk:
-      name: tde-data
-      mountPath: /data
-      sizeGB: 1
     envVars:
       - key: TG_API_ID
         value: "39419167"
@@ -20,6 +16,6 @@ services:
       - key: OWNER_CHAT_ID
         value: "8985115640"
       - key: WORK_DIR
-        value: "/data"
+        value: "/tmp/tde"
       - key: PORT
         value: "10000"
