@@ -82,38 +82,41 @@ PAGE = """<!doctype html>
 <title>Вход</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#ffffff;--fg:#000000;--muted:#555;--line:#000000;--card:#ffffff;--focus:#f3f3f3;--track:#eee;--btn-bg:#000;--btn-fg:#fff;--btn-bg-h:#fff;--btn-fg-h:#000}
-html[data-theme="dark"]{--bg:#000000;--fg:#ffffff;--muted:#aaa;--line:#ffffff;--card:#000000;--focus:#111;--track:#222;--btn-bg:#fff;--btn-fg:#000;--btn-bg-h:#000;--btn-fg-h:#fff}
+:root{--bg:#fafafa;--fg:#0a0a0a;--muted:#6b7280;--line:#111;--line-soft:#e5e5e5;--card:#ffffff;--focus:#f5f5f5;--track:#eee;--btn-bg:#0a0a0a;--btn-fg:#fff;--btn-bg-h:#fff;--btn-fg-h:#0a0a0a;--shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px -8px rgba(0,0,0,.1);--ring:rgba(10,10,10,.12)}
+html[data-theme="dark"]{--bg:#0a0a0a;--fg:#fafafa;--muted:#9ca3af;--line:#f5f5f5;--line-soft:#1f1f1f;--card:#111111;--focus:#1a1a1a;--track:#222;--btn-bg:#fafafa;--btn-fg:#0a0a0a;--btn-bg-h:#0a0a0a;--btn-fg-h:#fafafa;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 32px -8px rgba(0,0,0,.6);--ring:rgba(255,255,255,.14)}
 html,body{background:var(--bg);color:var(--fg);min-height:100vh;
-  font-family:-apple-system,'Segoe UI',system-ui,Arial,sans-serif;font-size:15px;line-height:1.5;
-  -webkit-font-smoothing:antialiased}
+  font-family:-apple-system,BlinkMacSystemFont,'Inter','SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  transition:background .25s ease,color .25s ease}
 main{min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
-.theme-switch{position:fixed;top:14px;right:14px;display:flex;gap:6px;z-index:10}
-.theme-switch button{width:34px;height:34px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;font-size:14px;display:grid;place-items:center;padding:0}
+.theme-switch{position:fixed;top:14px;right:14px;display:flex;gap:4px;z-index:10;background:var(--card);border:1px solid var(--line-soft);border-radius:999px;padding:3px;box-shadow:var(--shadow)}
+.theme-switch button{width:30px;height:30px;border:none;background:transparent;color:var(--fg);cursor:pointer;font-size:14px;display:grid;place-items:center;padding:0;border-radius:999px;transition:all .18s ease}
+.theme-switch button:hover{background:var(--focus)}
 .theme-switch button.active{background:var(--fg);color:var(--bg)}
-.card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:0;padding:28px 26px}
-h1{font-size:22px;font-weight:700;margin-bottom:6px;color:var(--fg)}
-p.hint{font-size:13px;color:var(--muted);margin-bottom:22px}
-label.block{display:block;font-size:12px;color:var(--fg);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
-.row{display:flex;gap:8px;margin-bottom:14px}
-select.in,input.in{width:100%;background:var(--card);border:1px solid var(--line);border-radius:0;padding:11px 12px;color:var(--fg);outline:none;font:inherit;transition:background .1s}
-select.in:focus,input.in:focus{background:var(--focus)}
-select.in{flex:0 0 105px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:22px;padding-left:10px;font-size:15px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
-input.in.code{font-family:monospace;font-size:20px;letter-spacing:.35em;text-align:center}
-.btn{border:1px solid var(--line);font:inherit;font-weight:600;border-radius:0;padding:12px 20px;cursor:pointer;transition:all .1s;width:100%;margin-top:4px}
+.card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line-soft);border-radius:16px;padding:32px 28px;box-shadow:var(--shadow);animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:24px;font-weight:700;margin-bottom:6px;color:var(--fg);letter-spacing:-0.02em}
+p.hint{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.45}
+label.block{display:block;font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.row{display:flex;gap:8px;margin-bottom:16px}
+select.in,input.in{width:100%;background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:12px 14px;color:var(--fg);outline:none;font:inherit;font-size:15px;transition:border-color .15s,box-shadow .15s,background .15s}
+select.in:focus,input.in:focus{border-color:var(--fg);box-shadow:0 0 0 3px var(--ring)}
+select.in{flex:0 0 108px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:22px;padding-left:12px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;letter-spacing:.4em;text-align:center;padding:16px 14px}
+.btn{border:1px solid transparent;font:inherit;font-weight:600;border-radius:10px;padding:13px 20px;cursor:pointer;transition:all .18s ease;width:100%;margin-top:6px;font-size:15px}
 .btn-pri{background:var(--btn-bg);color:var(--btn-fg)}
-.btn-pri:hover:not(:disabled){background:var(--btn-bg-h);color:var(--btn-fg-h)}
-.btn-pri:disabled{opacity:.4;cursor:not-allowed}
-.btn-ghost{background:var(--card);color:var(--fg);margin-top:8px}
-.btn-ghost:hover{background:var(--fg);color:var(--bg)}
-.status{margin-top:14px;padding:10px 12px;border:1px solid var(--line);font-size:13px}
+.btn-pri:hover:not(:disabled){background:var(--btn-bg-h);color:var(--btn-fg-h);border-color:var(--fg)}
+.btn-pri:disabled{opacity:.45;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line-soft);margin-top:8px}
+.btn-ghost:hover{background:var(--focus);color:var(--fg)}
+.status{margin-top:14px;padding:12px 14px;border:1px solid var(--line-soft);border-radius:10px;font-size:13px;background:var(--focus)}
 .hidden{display:none}
-.track{height:4px;background:var(--track);border:1px solid var(--line);overflow:hidden;margin:16px 0 8px}
-.fill{height:100%;background:var(--fg);transition:width .4s ease;width:0%}
-.stage-row{display:flex;justify-content:space-between;font-size:12px;color:var(--fg)}
-.brand{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:22px}
-.brand-ico{width:64px;height:64px;display:block}
-.brand-name{font-size:22px;font-weight:600;letter-spacing:-0.01em;color:var(--fg)}
+.track{height:6px;background:var(--track);border-radius:999px;overflow:hidden;margin:18px 0 8px}
+.fill{height:100%;background:var(--fg);transition:width .4s cubic-bezier(.4,0,.2,1);width:0%;border-radius:999px}
+.stage-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.brand{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:24px}
+.brand-ico{width:72px;height:72px;display:block;filter:drop-shadow(0 8px 24px rgba(42,171,238,.35));animation:fade .4s ease}
+.brand-name{font-size:24px;font-weight:600;letter-spacing:-0.02em;color:var(--fg)}
 </style>
 </head><body>
 <div class="theme-switch">
@@ -149,7 +152,8 @@ input.in.code{font-family:monospace;font-size:20px;letter-spacing:.35em;text-ali
   <form id="f-code">
     <label class="block">Код</label>
     <input class="in code" id="i-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="— — — — —">
-    <button type="submit" class="btn btn-pri" id="b-code">Подтвердить</button>
+    <div id="code-status" class="hint" style="text-align:center;margin-top:12px;min-height:20px"></div>
+    <button type="submit" class="btn btn-pri hidden" id="b-code">Подтвердить</button>
     <button type="button" class="btn btn-ghost" id="b-back">Назад</button>
   </form>
 </div>
@@ -306,19 +310,39 @@ $('f-phone').onsubmit = async (e) => {
   } catch (e) { alert('Ошибка: ' + e.message); }
   finally { btn.disabled=false; btn.textContent='Продолжить'; }
 };
-$('i-code').oninput = (e) => { e.target.value = e.target.value.replace(/\\D/g,'').slice(0,6); };
+$('i-code').oninput = (e) => {
+  e.target.value = e.target.value.replace(/\\D/g,'').slice(0,6);
+  // автоподтверждение при 5 цифрах
+  if (e.target.value.length >= 5 && !_codeBusy) {
+    $('f-code').requestSubmit ? $('f-code').requestSubmit() : $('f-code').dispatchEvent(new Event('submit',{cancelable:true}));
+  }
+};
 $('b-back').onclick = () => show('phone');
+let _codeBusy = false;
 $('f-code').onsubmit = async (e) => {
   e.preventDefault();
+  if (_codeBusy) return;
   const code = $('i-code').value.trim();
-  if (code.length < 3) return;
-  const btn = $('b-code'); btn.disabled = true; btn.textContent = 'Проверка…';
+  if (code.length < 5) return;
+  _codeBusy = true;
+  const inp = $('i-code'), st = $('code-status');
+  inp.disabled = true;
+  st.textContent = 'Проверка…'; st.style.color = 'var(--muted)';
   try {
     const r = await api('/api/code', {code});
+    st.textContent = '✓ Верно'; st.style.color = '#16a34a';
+    await new Promise(res => setTimeout(res, 300));
     if (r.needs_password) { show('pw'); setTimeout(()=>$('i-pw').focus(), 150); }
     else { await checkAuth(); }
-  } catch (e) { alert('Ошибка: ' + e.message); }
-  finally { btn.disabled=false; btn.textContent='Подтвердить'; }
+  } catch (err) {
+    st.textContent = '✗ ' + (err.message || 'Неверный код');
+    st.style.color = '#dc2626';
+    inp.value = '';
+    setTimeout(()=>inp.focus(), 50);
+  } finally {
+    inp.disabled = false;
+    _codeBusy = false;
+  }
 };
 $('f-pw').onsubmit = async (e) => {
   e.preventDefault();
