@@ -78,16 +78,19 @@ async def is_authorized() -> bool:
 PAGE = """<!doctype html>
 <html lang="ru"><head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Вход</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#fafafa;--fg:#0a0a0a;--muted:#6b7280;--line:#111;--line-soft:#e5e5e5;--card:#ffffff;--focus:#f5f5f5;--track:#eee;--tg:#2AABEE;--tg-h:#1e95d4;--btn-bg:#2AABEE;--btn-fg:#fff;--btn-bg-h:#1e95d4;--btn-fg-h:#fff;--shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px -8px rgba(0,0,0,.1);--ring:rgba(42,171,238,.2)}
 html[data-theme="dark"]{--bg:#0a0a0a;--fg:#fafafa;--muted:#9ca3af;--line:#f5f5f5;--line-soft:#1f1f1f;--card:#111111;--focus:#1a1a1a;--track:#222;--tg:#2AABEE;--tg-h:#1e95d4;--btn-bg:#2AABEE;--btn-fg:#fff;--btn-bg-h:#1e95d4;--btn-fg-h:#fff;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 32px -8px rgba(0,0,0,.6);--ring:rgba(42,171,238,.25)}
-html,body{background:var(--bg);color:var(--fg);min-height:100vh;
+html,body{background:var(--bg);color:var(--fg);min-height:100vh;width:100%;max-width:100vw;
   font-family:-apple-system,BlinkMacSystemFont,'Inter','SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.5;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-  transition:background .25s ease,color .25s ease}
+  transition:background .25s ease,color .25s ease;
+  overflow-x:hidden;overscroll-behavior:none;-webkit-overflow-scrolling:auto;touch-action:pan-y}
+html{position:relative}
+body{position:relative;overflow-x:clip}
 main{min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
 .theme-switch{position:fixed;top:14px;right:14px;display:flex;gap:4px;z-index:10;background:var(--card);border:1px solid var(--line-soft);border-radius:999px;padding:3px;box-shadow:var(--shadow)}
 .theme-switch button{width:30px;height:30px;border:none;background:transparent;color:var(--fg);cursor:pointer;font-size:14px;display:grid;place-items:center;padding:0;border-radius:999px;transition:all .18s ease}
