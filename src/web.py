@@ -271,36 +271,52 @@ function getDial() {
   const opt = sel.options[sel.selectedIndex];
   return opt ? opt.dataset.dial : '+7';
 }
-// Авто-смена страны по вставленному префиксу: берём самый длинный совпадающий код
-function detectCountry() {
-  const raw = $('i-phone').value.trim();
-  if (!raw.startsWith('+')) return;
-  const digits = '+' + raw.replace(/\\D/g,'');
+// Единое поле: `+код номер`. Пишем код — страна в селекторе переключается.
+// Меняем страну в селекторе — префикс в поле переписывается, локальная часть сохраняется.
+function normalizePhone(raw) {
+  const t = raw.trim();
+  if (!t) return '';
+  // всё, что не цифра и не ведущий '+', вычищаем
+  const hasPlus = t.startsWith('+');
+  const digits = t.replace(/\\D/g,'');
+  return (hasPlus ? '+' : '') + digits;
+}
+function matchCountry(valueWithPlus) {
+  if (!valueWithPlus.startsWith('+')) return -1;
   let bestIdx = -1, bestLen = 0;
   COUNTRIES.forEach(([code,,], i) => {
-    if (digits.startsWith(code) && code.length > bestLen) {
+    if (valueWithPlus.startsWith(code) && code.length > bestLen) {
       bestLen = code.length; bestIdx = i;
     }
   });
-  if (bestIdx >= 0) {
-    $('i-country').value = String(bestIdx);
-    $('i-phone').value = digits.slice(bestLen);
-  }
+  return bestIdx;
 }
-$('i-phone').addEventListener('input', detectCountry);
-$('i-phone').addEventListener('paste', () => setTimeout(detectCountry, 0));
-// Backspace при пустом поле номера → вернуть +код страны, можно его править
-$('i-phone').addEventListener('keydown', (e) => {
-  if (e.key !== 'Backspace') return;
+function syncCountryFromPhone() {
   const inp = $('i-phone');
-  if (inp.value.length === 0) {
-    e.preventDefault();
-    const dial = getDial();
-    // показываем код без последней цифры, чтобы следующий Backspace стирал его
-    inp.value = dial.slice(0, -1);
-    // поставить курсор в конец
-    setTimeout(()=>inp.setSelectionRange(inp.value.length, inp.value.length), 0);
-  }
+  const norm = normalizePhone(inp.value);
+  if (norm !== inp.value) inp.value = norm;
+  const idx = matchCountry(norm);
+  if (idx >= 0) $('i-country').value = String(idx);
+}
+// при смене страны в селекторе — заменить +код в поле
+$('i-country').addEventListener('change', () => {
+  const inp = $('i-phone');
+  const prev = normalizePhone(inp.value);
+  const prevIdx = matchCountry(prev);
+  const prevDial = prevIdx >= 0 ? COUNTRIES[prevIdx][0] : '';
+  const localPart = prevDial && prev.startsWith(prevDial) ? prev.slice(prevDial.length) : prev.replace(/^\\+/,'');
+  const newDial = getDial();
+  inp.value = newDial + localPart;
+  inp.focus();
+});
+$('i-phone').addEventListener('input', syncCountryFromPhone);
+$('i-phone').addEventListener('paste', () => setTimeout(syncCountryFromPhone, 0));
+// на пустое поле поставим стартовый +код выбранной страны при первом фокусе
+$('i-phone').addEventListener('focus', () => {
+  const inp = $('i-phone');
+  if (!inp.value) inp.value = getDial();
+  // курсор в конец
+  setTimeout(()=>inp.setSelectionRange(inp.value.length, inp.value.length), 0);
 });
 async function api(path, body) {
   const r = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):null});
@@ -320,10 +336,10 @@ async function checkAuth() {
 }
 $('f-phone').onsubmit = async (e) => {
   e.preventDefault();
-  const dial = getDial();
-  const raw = $('i-phone').value.replace(/\\D/g,'');
-  if (!raw) return;
-  const phone = dial + raw;
+  // поле уже содержит полный номер вида +9947712345
+  const digits = $('i-phone').value.replace(/\\D/g,'');
+  if (digits.length < 5) return;
+  const phone = '+' + digits;
   const btn = $('b-phone'); btn.disabled = true; btn.textContent = 'Отправка…';
   try {
     await api('/api/login', {phone});
