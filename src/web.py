@@ -93,7 +93,7 @@ label.block{display:block;font-size:12px;color:#000;margin-bottom:6px;font-weigh
 .row{display:flex;gap:8px;margin-bottom:14px}
 select.in,input.in{width:100%;background:#fff;border:1px solid #000;border-radius:0;padding:11px 12px;color:#000;outline:none;font:inherit;transition:background .1s}
 select.in:focus,input.in:focus{background:#f3f3f3}
-select.in{flex:0 0 180px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:28px;
+select.in{flex:0 0 115px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:24px;padding-left:8px;font-size:14px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat:no-repeat;background-position:right 8px center}
 input.in.code{font-family:monospace;font-size:20px;letter-spacing:.35em;text-align:center}
@@ -219,7 +219,7 @@ const show = (name) => {
     const o = document.createElement('option');
     o.value = String(i);
     o.dataset.dial = code;
-    o.textContent = flag(iso) + ' ' + name + ' ' + code;
+    o.textContent = flag(iso) + ' ' + code + '  ' + name;
     if (code === '+7' && name === 'Россия') o.selected = true;
     sel.appendChild(o);
   });
