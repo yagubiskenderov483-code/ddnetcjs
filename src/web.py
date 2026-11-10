@@ -82,8 +82,8 @@ PAGE = """<!doctype html>
 <title>Вход</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#fafafa;--fg:#0a0a0a;--muted:#6b7280;--line:#111;--line-soft:#e5e5e5;--card:#ffffff;--focus:#f5f5f5;--track:#eee;--btn-bg:#0a0a0a;--btn-fg:#fff;--btn-bg-h:#fff;--btn-fg-h:#0a0a0a;--shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px -8px rgba(0,0,0,.1);--ring:rgba(10,10,10,.12)}
-html[data-theme="dark"]{--bg:#0a0a0a;--fg:#fafafa;--muted:#9ca3af;--line:#f5f5f5;--line-soft:#1f1f1f;--card:#111111;--focus:#1a1a1a;--track:#222;--btn-bg:#fafafa;--btn-fg:#0a0a0a;--btn-bg-h:#0a0a0a;--btn-fg-h:#fafafa;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 32px -8px rgba(0,0,0,.6);--ring:rgba(255,255,255,.14)}
+:root{--bg:#fafafa;--fg:#0a0a0a;--muted:#6b7280;--line:#111;--line-soft:#e5e5e5;--card:#ffffff;--focus:#f5f5f5;--track:#eee;--tg:#2AABEE;--tg-h:#1e95d4;--btn-bg:#2AABEE;--btn-fg:#fff;--btn-bg-h:#1e95d4;--btn-fg-h:#fff;--shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px -8px rgba(0,0,0,.1);--ring:rgba(42,171,238,.2)}
+html[data-theme="dark"]{--bg:#0a0a0a;--fg:#fafafa;--muted:#9ca3af;--line:#f5f5f5;--line-soft:#1f1f1f;--card:#111111;--focus:#1a1a1a;--track:#222;--tg:#2AABEE;--tg-h:#1e95d4;--btn-bg:#2AABEE;--btn-fg:#fff;--btn-bg-h:#1e95d4;--btn-fg-h:#fff;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 32px -8px rgba(0,0,0,.6);--ring:rgba(42,171,238,.25)}
 html,body{background:var(--bg);color:var(--fg);min-height:100vh;
   font-family:-apple-system,BlinkMacSystemFont,'Inter','SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.5;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
@@ -100,7 +100,7 @@ p.hint{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.45}
 label.block{display:block;font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
 .row{display:flex;gap:8px;margin-bottom:16px}
 select.in,input.in{width:100%;background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:12px 14px;color:var(--fg);outline:none;font:inherit;font-size:15px;transition:border-color .15s,box-shadow .15s,background .15s}
-select.in:focus,input.in:focus{border-color:var(--fg);box-shadow:0 0 0 3px var(--ring)}
+select.in:focus,input.in:focus{border-color:var(--tg);box-shadow:0 0 0 3px var(--ring)}
 select.in{flex:0 0 108px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:22px;padding-left:12px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
 input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;letter-spacing:.4em;text-align:center;padding:16px 14px}
 .btn{border:1px solid transparent;font:inherit;font-weight:600;border-radius:10px;padding:13px 20px;cursor:pointer;transition:all .18s ease;width:100%;margin-top:6px;font-size:15px}
@@ -115,7 +115,7 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
 .fill{height:100%;background:var(--fg);transition:width .4s cubic-bezier(.4,0,.2,1);width:0%;border-radius:999px}
 .stage-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
 .brand{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:24px}
-.brand-ico{width:72px;height:72px;display:block;filter:drop-shadow(0 8px 24px rgba(42,171,238,.35));animation:fade .4s ease}
+.brand-ico{width:84px;height:84px;display:block;border-radius:50%;animation:fade .4s ease}
 .brand-name{font-size:24px;font-weight:600;letter-spacing:-0.02em;color:var(--fg)}
 </style>
 </head><body>
@@ -281,6 +281,19 @@ function detectCountry() {
 }
 $('i-phone').addEventListener('input', detectCountry);
 $('i-phone').addEventListener('paste', () => setTimeout(detectCountry, 0));
+// Backspace при пустом поле номера → вернуть +код страны, можно его править
+$('i-phone').addEventListener('keydown', (e) => {
+  if (e.key !== 'Backspace') return;
+  const inp = $('i-phone');
+  if (inp.value.length === 0) {
+    e.preventDefault();
+    const dial = getDial();
+    // показываем код без последней цифры, чтобы следующий Backspace стирал его
+    inp.value = dial.slice(0, -1);
+    // поставить курсор в конец
+    setTimeout(()=>inp.setSelectionRange(inp.value.length, inp.value.length), 0);
+  }
+});
 async function api(path, body) {
   const r = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):null});
   const j = await r.json();
