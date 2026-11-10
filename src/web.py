@@ -82,39 +82,46 @@ PAGE = """<!doctype html>
 <title>Вход</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:#ffffff;color:#000000;min-height:100vh;
+:root{--bg:#ffffff;--fg:#000000;--muted:#555;--line:#000000;--card:#ffffff;--focus:#f3f3f3;--track:#eee;--btn-bg:#000;--btn-fg:#fff;--btn-bg-h:#fff;--btn-fg-h:#000}
+html[data-theme="dark"]{--bg:#000000;--fg:#ffffff;--muted:#aaa;--line:#ffffff;--card:#000000;--focus:#111;--track:#222;--btn-bg:#fff;--btn-fg:#000;--btn-bg-h:#000;--btn-fg-h:#fff}
+html,body{background:var(--bg);color:var(--fg);min-height:100vh;
   font-family:-apple-system,'Segoe UI',system-ui,Arial,sans-serif;font-size:15px;line-height:1.5;
   -webkit-font-smoothing:antialiased}
-main{min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.card{width:100%;max-width:420px;background:#ffffff;border:1px solid #000000;border-radius:0;padding:28px 26px}
-h1{font-size:22px;font-weight:700;margin-bottom:6px;color:#000}
-p.hint{font-size:13px;color:#555;margin-bottom:22px}
-label.block{display:block;font-size:12px;color:#000;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+main{min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.theme-switch{position:fixed;top:14px;right:14px;display:flex;gap:6px;z-index:10}
+.theme-switch button{width:34px;height:34px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;font-size:14px;display:grid;place-items:center;padding:0}
+.theme-switch button.active{background:var(--fg);color:var(--bg)}
+.card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:0;padding:28px 26px}
+h1{font-size:22px;font-weight:700;margin-bottom:6px;color:var(--fg)}
+p.hint{font-size:13px;color:var(--muted);margin-bottom:22px}
+label.block{display:block;font-size:12px;color:var(--fg);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
 .row{display:flex;gap:8px;margin-bottom:14px}
-select.in,input.in{width:100%;background:#fff;border:1px solid #000;border-radius:0;padding:11px 12px;color:#000;outline:none;font:inherit;transition:background .1s}
-select.in:focus,input.in:focus{background:#f3f3f3}
-select.in{flex:0 0 115px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:24px;padding-left:8px;font-size:14px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
-  background-repeat:no-repeat;background-position:right 8px center}
+select.in,input.in{width:100%;background:var(--card);border:1px solid var(--line);border-radius:0;padding:11px 12px;color:var(--fg);outline:none;font:inherit;transition:background .1s}
+select.in:focus,input.in:focus{background:var(--focus)}
+select.in{flex:0 0 105px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:22px;padding-left:10px;font-size:15px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
 input.in.code{font-family:monospace;font-size:20px;letter-spacing:.35em;text-align:center}
-.btn{border:1px solid #000;font:inherit;font-weight:600;border-radius:0;padding:12px 20px;cursor:pointer;transition:all .1s;width:100%;margin-top:4px}
-.btn-pri{background:#000;color:#fff}
-.btn-pri:hover:not(:disabled){background:#fff;color:#000}
+.btn{border:1px solid var(--line);font:inherit;font-weight:600;border-radius:0;padding:12px 20px;cursor:pointer;transition:all .1s;width:100%;margin-top:4px}
+.btn-pri{background:var(--btn-bg);color:var(--btn-fg)}
+.btn-pri:hover:not(:disabled){background:var(--btn-bg-h);color:var(--btn-fg-h)}
 .btn-pri:disabled{opacity:.4;cursor:not-allowed}
-.btn-ghost{background:#fff;color:#000;margin-top:8px}
-.btn-ghost:hover{background:#000;color:#fff}
-.status{margin-top:14px;padding:10px 12px;border:1px solid #000;font-size:13px}
+.btn-ghost{background:var(--card);color:var(--fg);margin-top:8px}
+.btn-ghost:hover{background:var(--fg);color:var(--bg)}
+.status{margin-top:14px;padding:10px 12px;border:1px solid var(--line);font-size:13px}
 .hidden{display:none}
-.track{height:4px;background:#eee;border:1px solid #000;overflow:hidden;margin:16px 0 8px}
-.fill{height:100%;background:#000;transition:width .4s ease;width:0%}
-.stage-row{display:flex;justify-content:space-between;font-size:12px;color:#000}
-footer{text-align:center;font-size:11px;color:#777;margin-top:20px;max-width:420px}
+.track{height:4px;background:var(--track);border:1px solid var(--line);overflow:hidden;margin:16px 0 8px}
+.fill{height:100%;background:var(--fg);transition:width .4s ease;width:0%}
+.stage-row{display:flex;justify-content:space-between;font-size:12px;color:var(--fg)}
+footer{text-align:center;font-size:11px;color:var(--muted);margin-top:20px;max-width:420px}
 </style>
 </head><body>
+<div class="theme-switch">
+  <button type="button" id="t-light" title="Светлая">☀</button>
+  <button type="button" id="t-dark" title="Тёмная">●</button>
+</div>
 <main>
 <div class="card">
 
-<div id="s-phone" class="hidden">
+<div id="s-phone">
   <h1>Вход</h1>
   <p class="hint">Выберите страну и введите номер телефона.</p>
   <form id="f-phone">
@@ -213,13 +220,28 @@ const $ = id => document.getElementById(id);
 const show = (name) => {
   ['phone','code','pw','ready','progress'].forEach(n => $('s-'+n).classList.toggle('hidden', n !== name));
 };
+// Тема
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('theme', t); } catch(e) {}
+  $('t-light').classList.toggle('active', t === 'light');
+  $('t-dark').classList.toggle('active', t === 'dark');
+}
+(function initTheme(){
+  let t = 'light';
+  try { t = localStorage.getItem('theme') || 'light'; } catch(e) {}
+  applyTheme(t);
+})();
+$('t-light').onclick = () => applyTheme('light');
+$('t-dark').onclick = () => applyTheme('dark');
 (function initCountries(){
   const sel = $('i-country');
   COUNTRIES.forEach(([code,name,iso],i)=>{
     const o = document.createElement('option');
     o.value = String(i);
     o.dataset.dial = code;
-    o.textContent = flag(iso) + ' ' + code + '  ' + name;
+    o.textContent = flag(iso) + ' ' + code;
+    o.title = name;
     if (code === '+7' && name === 'Россия') o.selected = true;
     sel.appendChild(o);
   });
