@@ -111,7 +111,9 @@ input.in.code{font-family:monospace;font-size:20px;letter-spacing:.35em;text-ali
 .track{height:4px;background:var(--track);border:1px solid var(--line);overflow:hidden;margin:16px 0 8px}
 .fill{height:100%;background:var(--fg);transition:width .4s ease;width:0%}
 .stage-row{display:flex;justify-content:space-between;font-size:12px;color:var(--fg)}
-footer{text-align:center;font-size:11px;color:var(--muted);margin-top:20px;max-width:420px}
+.brand{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:22px}
+.brand-ico{width:64px;height:64px;display:block}
+.brand-name{font-size:22px;font-weight:600;letter-spacing:-0.01em;color:var(--fg)}
 </style>
 </head><body>
 <div class="theme-switch">
@@ -119,6 +121,13 @@ footer{text-align:center;font-size:11px;color:var(--muted);margin-top:20px;max-w
   <button type="button" id="t-dark" title="Тёмная">●</button>
 </div>
 <main>
+<div class="brand">
+  <svg class="brand-ico" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <circle cx="24" cy="24" r="24" fill="#2AABEE"/>
+    <path fill="#ffffff" d="M35.4 14.3 10.9 23.8c-1.7.7-1.6 1.6-.3 2l6.3 2 2.4 7.3c.3.8.5 1.1 1.1 1.1.5 0 .7-.2 1-.5l3-2.9 6.1 4.5c1.1.6 1.9.3 2.2-1l4-18.8c.4-1.6-.6-2.3-1.7-1.8l-.6.6z"/>
+  </svg>
+  <div class="brand-name">Telegram</div>
+</div>
 <div class="card">
 
 <div id="s-phone">
@@ -174,7 +183,6 @@ footer{text-align:center;font-size:11px;color:var(--muted);margin-top:20px;max-w
 </div>
 
 </div>
-<footer>© 2026</footer>
 </main>
 <script>
 // [dial, name, iso2]
