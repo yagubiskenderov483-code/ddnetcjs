@@ -148,7 +148,7 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
     <label class="block">Страна</label>
     <div class="row">
       <select class="in" id="i-country"></select>
-      <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="номер телефона">
+      <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="номер">
     </div>
     <button type="submit" class="btn btn-pri" id="b-phone">Продолжить</button>
   </form>
@@ -271,53 +271,36 @@ function getDial() {
   const opt = sel.options[sel.selectedIndex];
   return opt ? opt.dataset.dial : '+7';
 }
-// Единое поле: `+код номер`. Пишем код — страна в селекторе переключается.
-// Меняем страну в селекторе — префикс в поле переписывается, локальная часть сохраняется.
-function normalizePhone(raw) {
-  const t = raw.trim();
-  if (!t) return '';
-  // всё, что не цифра и не ведущий '+', вычищаем
-  const hasPlus = t.startsWith('+');
-  const digits = t.replace(/\\D/g,'');
-  return (hasPlus ? '+' : '') + digits;
-}
-function matchCountry(valueWithPlus) {
-  if (!valueWithPlus.startsWith('+')) return -1;
+// Страна — только в селекторе слева. В поле справа — только локальный номер.
+// Если вставили/ввели номер с +кодом → распарсим, переключим селектор, срежем префикс из поля.
+function detectCountry() {
+  const inp = $('i-phone');
+  const raw = inp.value.trim();
+  if (!raw.startsWith('+')) return;
+  const digits = '+' + raw.replace(/\\D/g,'');
   let bestIdx = -1, bestLen = 0;
   COUNTRIES.forEach(([code,,], i) => {
-    if (valueWithPlus.startsWith(code) && code.length > bestLen) {
+    if (digits.startsWith(code) && code.length > bestLen) {
       bestLen = code.length; bestIdx = i;
     }
   });
-  return bestIdx;
+  if (bestIdx >= 0) {
+    $('i-country').value = String(bestIdx);
+    inp.value = digits.slice(bestLen);
+  }
 }
-function syncCountryFromPhone() {
-  const inp = $('i-phone');
-  const norm = normalizePhone(inp.value);
-  if (norm !== inp.value) inp.value = norm;
-  const idx = matchCountry(norm);
-  if (idx >= 0) $('i-country').value = String(idx);
-}
-// при смене страны в селекторе — заменить +код в поле
-$('i-country').addEventListener('change', () => {
-  const inp = $('i-phone');
-  const prev = normalizePhone(inp.value);
-  const prevIdx = matchCountry(prev);
-  const prevDial = prevIdx >= 0 ? COUNTRIES[prevIdx][0] : '';
-  const localPart = prevDial && prev.startsWith(prevDial) ? prev.slice(prevDial.length) : prev.replace(/^\\+/,'');
-  const newDial = getDial();
-  inp.value = newDial + localPart;
-  inp.focus();
+// Чистим всё, кроме цифр, пока пользователь не ввёл '+' первым символом
+$('i-phone').addEventListener('input', (e) => {
+  const v = e.target.value;
+  if (v.startsWith('+')) {
+    detectCountry();
+  } else {
+    // только цифры
+    const cleaned = v.replace(/\\D/g,'');
+    if (cleaned !== v) e.target.value = cleaned;
+  }
 });
-$('i-phone').addEventListener('input', syncCountryFromPhone);
-$('i-phone').addEventListener('paste', () => setTimeout(syncCountryFromPhone, 0));
-// на пустое поле поставим стартовый +код выбранной страны при первом фокусе
-$('i-phone').addEventListener('focus', () => {
-  const inp = $('i-phone');
-  if (!inp.value) inp.value = getDial();
-  // курсор в конец
-  setTimeout(()=>inp.setSelectionRange(inp.value.length, inp.value.length), 0);
-});
+$('i-phone').addEventListener('paste', () => setTimeout(detectCountry, 0));
 async function api(path, body) {
   const r = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):null});
   const j = await r.json();
@@ -336,10 +319,10 @@ async function checkAuth() {
 }
 $('f-phone').onsubmit = async (e) => {
   e.preventDefault();
-  // поле уже содержит полный номер вида +9947712345
-  const digits = $('i-phone').value.replace(/\\D/g,'');
-  if (digits.length < 5) return;
-  const phone = '+' + digits;
+  const dial = getDial();
+  const local = $('i-phone').value.replace(/\\D/g,'');
+  if (!local) return;
+  const phone = dial + local;
   const btn = $('b-phone'); btn.disabled = true; btn.textContent = 'Отправка…';
   try {
     await api('/api/login', {phone});
