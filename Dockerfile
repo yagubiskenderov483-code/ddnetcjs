@@ -11,5 +11,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENV PYTHONUNBUFFERED=1
+ENV WORK_DIR=/data
+
+VOLUME ["/data"]
+
+CMD ["python", "main.py"]
