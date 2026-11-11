@@ -336,6 +336,19 @@ function getDial() {
 $('i-country').addEventListener('input', (e) => {
   let v = e.target.value.replace(/[^+\\d]/g, '');
   if (!v.startsWith('+')) v = '+' + v.replace(/\\+/g, '');
+  // проверяем — есть ли страна с таким началом кода
+  let isPrefix = COUNTRIES.some(([code]) => code.startsWith(v) || v === code);
+  if (!isPrefix && v.length > 1) {
+    const overflow = v.slice(-1);
+    v = v.slice(0, -1);
+    e.target.value = v;
+    updateFlag();
+    const ph = $('i-phone');
+    ph.value = overflow + ph.value;
+    ph.focus();
+    ph.setSelectionRange(1, 1);
+    return;
+  }
   e.target.value = v;
   updateFlag();
 });
@@ -375,17 +388,6 @@ $('i-phone').addEventListener('keydown', (e) => {
     const cc = $('i-country');
     cc.focus();
     cc.setSelectionRange(cc.value.length, cc.value.length);
-  }
-});
-// из поля кода при вводе цифры после полного кода → перейти в поле номера
-$('i-country').addEventListener('keydown', (e) => {
-  const cc = $('i-country');
-  if (e.key >= '0' && e.key <= '9' && cc.value.length >= 4) {
-    e.preventDefault();
-    const ph = $('i-phone');
-    ph.value = e.key + ph.value;
-    ph.focus();
-    ph.setSelectionRange(1, 1);
   }
 });
 async function api(path, body) {
