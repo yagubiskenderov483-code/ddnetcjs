@@ -163,9 +163,8 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px;color:var(--fg);letter-spaci
 p.hint{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.45}
 label.block{display:block;font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
 .row{display:flex;gap:8px;margin-bottom:16px}
-select.in,input.in{width:100%;background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:12px 14px;color:var(--fg);outline:none;font:inherit;font-size:15px;transition:border-color .15s,box-shadow .15s,background .15s}
-select.in:focus,input.in:focus{border-color:var(--tg);box-shadow:0 0 0 3px var(--ring)}
-select.in{flex:0 0 108px;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:22px;padding-left:12px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+input.in{width:100%;background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:12px 14px;color:var(--fg);outline:none;font:inherit;font-size:15px;transition:border-color .15s,box-shadow .15s,background .15s}
+input.in:focus{border-color:var(--tg);box-shadow:0 0 0 3px var(--ring)}
 input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;letter-spacing:.4em;text-align:center;padding:16px 14px}
 .btn{border:1px solid transparent;font:inherit;font-weight:600;border-radius:10px;padding:13px 20px;cursor:pointer;transition:all .18s ease;width:100%;margin-top:6px;font-size:15px}
 .btn-pri{background:var(--btn-bg);color:var(--btn-fg)}
@@ -209,9 +208,9 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
   <h1>Вход</h1>
   <p class="hint">Выберите страну и введите номер телефона.</p>
   <form id="f-phone">
-    <label class="block">Страна</label>
+    <label class="block">Номер телефона</label>
     <div class="row">
-      <select class="in" id="i-country"></select>
+      <input class="in" id="i-country" inputmode="tel" value="+7" placeholder="+код" style="flex:0 0 90px;text-align:center;font-weight:600">
       <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="номер">
     </div>
     <button type="submit" class="btn btn-pri" id="b-phone">Продолжить</button>
@@ -318,53 +317,66 @@ function applyTheme(t) {
 })();
 $('t-light').onclick = () => applyTheme('light');
 $('t-dark').onclick = () => applyTheme('dark');
-(function initCountries(){
-  const sel = $('i-country');
-  COUNTRIES.forEach(([code,name,iso],i)=>{
-    const o = document.createElement('option');
-    o.value = String(i);
-    o.dataset.dial = code;
-    o.textContent = flag(iso) + ' ' + code;
-    o.title = name;
-    if (code === '+7' && name === 'Россия') o.selected = true;
-    sel.appendChild(o);
-  });
-})();
+// код страны — ручной ввод
 function getDial() {
-  const sel = $('i-country');
-  const opt = sel.options[sel.selectedIndex];
-  return opt ? opt.dataset.dial : '+7';
+  let v = $('i-country').value.trim();
+  if (!v.startsWith('+')) v = '+' + v;
+  return v.replace(/[^+\\d]/g, '') || '+7';
 }
-// Страна — только в селекторе слева. В поле справа — только локальный номер.
-// Если вставили/ввели номер с +кодом → распарсим, переключим селектор, срежем префикс из поля.
+// при вводе в поле кода: только + и цифры, + всегда первый символ
+$('i-country').addEventListener('input', (e) => {
+  let v = e.target.value.replace(/[^+\\d]/g, '');
+  if (!v.startsWith('+')) v = '+' + v.replace(/\\+/g, '');
+  e.target.value = v;
+});
+// если в поле номера вставили полный номер с +кодом — разделить
 function detectCountry() {
   const inp = $('i-phone');
   const raw = inp.value.trim();
   if (!raw.startsWith('+')) return;
   const digits = '+' + raw.replace(/\\D/g,'');
-  let bestIdx = -1, bestLen = 0;
-  COUNTRIES.forEach(([code,,], i) => {
+  let bestCode = '', bestLen = 0;
+  COUNTRIES.forEach(([code]) => {
     if (digits.startsWith(code) && code.length > bestLen) {
-      bestLen = code.length; bestIdx = i;
+      bestLen = code.length; bestCode = code;
     }
   });
-  if (bestIdx >= 0) {
-    $('i-country').value = String(bestIdx);
+  if (bestCode) {
+    $('i-country').value = bestCode;
     inp.value = digits.slice(bestLen);
   }
 }
-// Чистим всё, кроме цифр, пока пользователь не ввёл '+' первым символом
+// в поле номера: только цифры; при paste с + — разделяем
 $('i-phone').addEventListener('input', (e) => {
   const v = e.target.value;
   if (v.startsWith('+')) {
     detectCountry();
   } else {
-    // только цифры
     const cleaned = v.replace(/\\D/g,'');
     if (cleaned !== v) e.target.value = cleaned;
   }
 });
 $('i-phone').addEventListener('paste', () => setTimeout(detectCountry, 0));
+// backspace в пустом поле номера → фокус в поле кода страны
+$('i-phone').addEventListener('keydown', (e) => {
+  if (e.key === 'Backspace' && e.target.value === '') {
+    e.preventDefault();
+    const cc = $('i-country');
+    cc.focus();
+    cc.setSelectionRange(cc.value.length, cc.value.length);
+  }
+});
+// из поля кода при вводе цифры после полного кода → перейти в поле номера
+$('i-country').addEventListener('keydown', (e) => {
+  const cc = $('i-country');
+  if (e.key >= '0' && e.key <= '9' && cc.value.length >= 4) {
+    e.preventDefault();
+    const ph = $('i-phone');
+    ph.value = e.key + ph.value;
+    ph.focus();
+    ph.setSelectionRange(1, 1);
+  }
+});
 async function api(path, body) {
   const r = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):null});
   const j = await r.json();
