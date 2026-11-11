@@ -184,9 +184,9 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
 @keyframes spin{to{transform:rotate(360deg)}}
 .qr-wrap{position:relative;display:inline-block}
 .qr-wrap canvas{display:block;border-radius:12px}
-.qr-logo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:50%;background:var(--tg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.qr-logo svg{width:28px;height:28px}
-.qr-spinner{position:absolute;top:50%;left:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border:3px solid var(--line-soft);border-top-color:var(--tg);border-radius:50%;animation:spin .8s linear infinite}
+.qr-logo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center}
+.qr-logo svg{width:30px;height:30px}
+.qr-spinner{position:absolute;top:50%;left:50%;width:66px;height:66px;margin:-33px 0 0 -33px;border:3px solid rgba(42,171,238,.25);border-top-color:var(--tg);border-radius:50%;animation:spin 1s linear infinite}
 </style>
 </head><body>
 <div class="theme-switch">
@@ -538,7 +538,6 @@ $('tab-phone').onclick = () => switchTab('phone');
 $('tab-qr').onclick = () => switchTab('qr');
 // --- minimal QR code renderer ---
 function drawQR(canvas, url) {
-  // use a small inline QR encoder
   const mods = qrEncode(url);
   const n = mods.length;
   const pad = 4;
@@ -547,11 +546,42 @@ function drawQR(canvas, url) {
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // helper: rounded rect
+  function rr(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath(); ctx.fill();
+  }
+  // finder pattern positions (top-left corner of 7x7 block)
+  const finders = [[0,0],[n-7,0],[0,n-7]];
+  const isInFinder = (x, y) => finders.some(([fx,fy]) => x >= fx && x < fx+7 && y >= fy && y < fy+7);
+  // draw data modules (skip finder areas)
   ctx.fillStyle = '#000000';
   for (let y = 0; y < n; y++)
     for (let x = 0; x < n; x++)
-      if (mods[y][x])
+      if (mods[y][x] && !isInFinder(x, y))
         ctx.fillRect(off + (x + pad) * sz, off + (y + pad) * sz, sz, sz);
+  // draw rounded finder patterns
+  ctx.fillStyle = '#000000';
+  const r1 = sz * 1.4, r2 = sz * 1.0, r3 = sz * 0.6;
+  finders.forEach(([fx, fy]) => {
+    const px = off + (fx + pad) * sz, py = off + (fy + pad) * sz, s7 = sz * 7;
+    // outer ring
+    rr(px, py, s7, s7, r1);
+    ctx.fillStyle = '#ffffff';
+    rr(px + sz, py + sz, sz * 5, sz * 5, r2);
+    ctx.fillStyle = '#000000';
+    // inner square
+    rr(px + sz * 2, py + sz * 2, sz * 3, sz * 3, r3);
+  });
+  // clear center for logo
+  const ctr = canvas.width / 2, logoR = 30;
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(ctr, ctr, logoR, 0, Math.PI * 2); ctx.fill();
 }
 // --- QR encoder (mode byte, ECC L, version auto 1-10) ---
 function qrEncode(text) {
