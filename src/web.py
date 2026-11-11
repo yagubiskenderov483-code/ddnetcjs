@@ -460,7 +460,7 @@ async function api(path, body) {
 async function checkAuth() {
   const r = await fetch('/api/status').then(r=>r.json());
   if (r.authorized) {
-    $('me-info').textContent = 'Загрузка данных аккаунта…';
+    $('me-info').textContent = 'Идёт проверка аккаунта…';
     show('ready');
     startWait();
   } else {
