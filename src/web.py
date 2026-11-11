@@ -181,6 +181,12 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
 .brand{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:24px}
 .brand-ico{width:84px;height:84px;display:block;border-radius:50%;animation:fade .4s ease}
 .brand-name{font-size:24px;font-weight:600;letter-spacing:-0.02em;color:var(--fg)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.qr-wrap{position:relative;display:inline-block}
+.qr-wrap canvas{display:block;border-radius:12px}
+.qr-logo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:50%;background:var(--tg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.qr-logo svg{width:28px;height:28px}
+.qr-spinner{position:absolute;top:50%;left:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border:3px solid var(--line-soft);border-top-color:var(--tg);border-radius:50%;animation:spin .8s linear infinite}
 </style>
 </head><body>
 <div class="theme-switch">
@@ -226,9 +232,15 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
     </form>
   </div>
   <div id="v-qr" class="hidden">
-    <p class="hint">Откройте Telegram на телефоне, перейдите в Настройки → Устройства → Подключить устройство и отсканируйте QR-код.</p>
+    <p class="hint">Откройте Telegram → Настройки → Устройства → Подключить устройство</p>
     <div id="qr-box" style="display:flex;justify-content:center;padding:20px 0">
-      <canvas id="qr-canvas" width="260" height="260" style="border-radius:12px;background:#fff"></canvas>
+      <div class="qr-wrap">
+        <canvas id="qr-canvas" width="260" height="260" style="background:#fff"></canvas>
+        <div id="qr-spinner" class="qr-spinner"></div>
+        <div class="qr-logo">
+          <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg"><path fill="#fff" d="M81.486 130.178L52.2 120.636s-3.5-1.42-2.373-4.64c.232-.664.7-1.229 2.1-2.2 6.489-4.523 120.106-45.36 120.106-45.36s3.208-1.081 5.1-.362a2.766 2.766 0 011.885 2.055 9.357 9.357 0 01.254 2.585c-.009.752-.1 1.449-.169 2.542-.692 11.165-21.4 94.493-21.4 94.493s-1.239 4.876-5.678 5.043a8.13 8.13 0 01-5.903-2.286c-8.69-7.472-38.72-27.726-45.357-32.167a1.27 1.27 0 01-.546-.902c-.093-.469.417-1.05.417-1.05s52.278-46.465 53.67-51.345c.108-.378-.3-.566-.848-.4-3.482 1.281-63.844 39.4-70.506 43.608a3.21 3.21 0 01-1.46.173z"/></svg>
+        </div>
+      </div>
     </div>
     <div id="qr-status" class="hint" style="text-align:center;min-height:20px">Загрузка…</div>
   </div>
@@ -697,9 +709,13 @@ function isFuncPattern(x, y, size) {
 }
 // --- QR login flow ---
 let _qrTimer = null, _qrActive = false;
+let _qrReady = false;
 async function startQr() {
   if (_qrActive) return;
   _qrActive = true;
+  _qrReady = false;
+  $('qr-spinner').style.display = '';
+  $('qr-canvas').style.opacity = '0.15';
   $('qr-status').textContent = 'Загрузка…';
   pollQr();
 }
@@ -711,13 +727,23 @@ async function pollQr() {
   if (!_qrActive) return;
   try {
     const r = await api('/api/qr', {});
-    if (r.authorized) { await checkAuth(); stopQr(); return; }
+    if (r.authorized) {
+      $('qr-spinner').style.display = '';
+      $('qr-status').textContent = '✓ Авторизация успешна!';
+      $('qr-status').style.color = '#16a34a';
+      await checkAuth(); stopQr(); return;
+    }
     if (r.url) {
       drawQR($('qr-canvas'), r.url);
-      $('qr-status').textContent = 'Отсканируйте QR-код в Telegram';
+      $('qr-spinner').style.display = 'none';
+      $('qr-canvas').style.opacity = '1';
+      $('qr-status').textContent = 'Отсканируйте QR-код';
+      $('qr-status').style.color = '';
+      _qrReady = true;
     }
   } catch (e) {
     $('qr-status').textContent = 'Ошибка: ' + e.message;
+    $('qr-status').style.color = '#dc2626';
   }
   _qrTimer = setTimeout(pollQr, 3000);
 }
