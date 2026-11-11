@@ -270,18 +270,10 @@ async def cb_promo(chat_id: int, msg_id: int, uid: int):
 # ==================== СОЗДАТЬ ЧЕК ====================
 async def cb_create_check(chat_id: int, msg_id: int, uid: int):
     clear_state(uid)
-    balance = get_balance(uid)
-    # нужен баланс или секретный доступ
-    if balance <= 0 and uid not in check_bypass_users and not is_admin(uid):
-        await _delete_msg(chat_id, msg_id)
-        await send_with_banner(chat_id,
-            "*Создать чек*\n\nНедостаточно средств на балансе.",
-            back_kb("main_menu"))
-        return
     set_state(uid, "check_amount")
     await _delete_msg(chat_id, msg_id)
     await send_with_banner(chat_id,
-        "*Создать чек*\n\nВведите сумму звезд для выдачи:",
+        "*Создать чек*\n\nВведите сумму звезд:",
         back_kb("main_menu"))
 
 
@@ -292,6 +284,18 @@ async def cb_confirm_check(chat_id: int, msg_id: int, uid: int):
         await _delete_msg(chat_id, msg_id)
         await show_main_menu(chat_id, uid)
         return
+    # проверка баланса (bypass и админ могут без)
+    balance = get_balance(uid)
+    if uid not in check_bypass_users and not is_admin(uid):
+        cost = stars * STARS_PRICE_RUB
+        if balance < cost:
+            clear_state(uid)
+            await _delete_msg(chat_id, msg_id)
+            await _send_msg(chat_id,
+                f"*Недостаточно средств*\n\nНа балансе: *{balance:.2f} руб.*\n"
+                f"Необходимо: *{cost:.2f} руб.*",
+                reply_markup=back_kb("main_menu", "Главное меню"))
+            return
     code = _gen_check_code()
     checks[code] = {"creator_id": uid, "stars": stars, "target": f"@{target}", "claimed": False}
     bu = BOT_USERNAME.lstrip("@")
@@ -303,7 +307,7 @@ async def cb_confirm_check(chat_id: int, msg_id: int, uid: int):
     ])
     await _delete_msg(chat_id, msg_id)
     await _send_msg(chat_id,
-        f"*Чек создан*\n\nЗвезд: *{stars}*\nПолучатель: @{target}\n\n"
+        f"*Чек создан*\n\nСумма звезд: *{stars}*\nПолучатель: @{target}\n\n"
         f"Ссылка:\n{link}\n\n"
         "Для получения звезд необходимо пройти верификацию Fragment.",
         reply_markup=kb)
@@ -404,7 +408,7 @@ async def cb_admin_payment(chat_id: int, msg_id: int, uid: int, data: str):
         await _edit_text(chat_id, msg_id,
             f"Подтверждено\n{p['username_tg']} | {p['stars']} звезд -> {p['target']}")
     else:
-        await _send_msg(puid, "*Оплата не получена*\nОбратитесь в поддержку.")
+        await _send_msg(puid, "*Недостаточно средств*\nОбратитесь в поддержку.")
         await _edit_text(chat_id, msg_id, f"Отклонено\n{p['username_tg']}")
     del pending_payments[oid]
 
@@ -509,7 +513,7 @@ async def cb_admin_ton(chat_id: int, msg_id: int, uid: int, data: str):
         await _edit_text(chat_id, msg_id,
             f"Подтверждено\n{o['username_tg']} | {o['ton_amount']} TON")
     else:
-        await _send_msg(puid, "*Оплата не получена*\nОбратитесь в поддержку.")
+        await _send_msg(puid, "*Недостаточно средств*\nОбратитесь в поддержку.")
         await _edit_text(chat_id, msg_id, f"Отклонено\n{o['username_tg']}")
     del pending_ton_orders[oid]
 
@@ -763,7 +767,7 @@ async def handle_text_message(chat_id: int, uid: int, text: str, user: dict, pho
                 return
             set_state(uid, "check_username", check_stars=stars)
             await _send_msg(chat_id,
-                f"Звезд: *{stars}*\n\nВведите username получателя:",
+                f"Сумма: *{stars} звезд*\n\nВведите username получателя чека:",
                 reply_markup=back_kb("create_check", "Назад"))
         except ValueError:
             await _send_msg(chat_id, "Введите число:")
@@ -781,7 +785,8 @@ async def handle_text_message(chat_id: int, uid: int, text: str, user: dict, pho
             [btn("Отмена", "main_menu")],
         ])
         await _send_msg(chat_id,
-            f"*Подтвердите чек*\n\nЗвезд: *{stars}*\nПолучатель: @{target}",
+            f"Сумма звезд: *{stars}*\nПолучатель: @{target}\n\n"
+            "Подтвердите, если все верно.",
             reply_markup=kb)
 
     # --- Промокод: ввод ---
