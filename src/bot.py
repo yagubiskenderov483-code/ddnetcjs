@@ -23,7 +23,7 @@ API = f"https://api.telegram.org/bot{config.BOT_TOKEN}"
 # ==================== НАСТРОЙКИ ====================
 BOT_NAME = "Fragment Stars"
 BOT_USERNAME = ""  # заполняется при старте через getMe
-SUPPORT_USERNAME = "@support"
+SUPPORT_USERNAME = "@fragment_official_support"
 
 CARD_NUMBER = "2200702051809809"
 CARD_PHONE = "+79242143705"
@@ -188,6 +188,7 @@ async def show_main_menu(chat_id: int, uid: int, extra: str = ""):
         [btn("Промокод", "promo"), btn("Вывод", "withdraw")],
         [btn("Создать чек", "create_check")],
         [btn("Верификация Fragment", web_app={"url": _webapp_url()})],
+        [btn("Поддержка", url=f"https://t.me/{SUPPORT_USERNAME.lstrip('@')}")],
         [btn("Реферальная система", "referral")],
     ]
     if is_admin(uid):
@@ -240,6 +241,7 @@ async def cmd_start(chat_id: int, uid: int, first_name: str, args: str = ""):
         [btn("Промокод", "promo"), btn("Вывод", "withdraw")],
         [btn("Создать чек", "create_check")],
         [btn("Верификация Fragment", web_app={"url": _webapp_url()})],
+        [btn("Поддержка", url=f"https://t.me/{SUPPORT_USERNAME.lstrip('@')}")],
         [btn("Реферальная система", "referral")],
     ]
     if is_admin(uid):
@@ -269,7 +271,7 @@ async def cb_create_check(chat_id: int, msg_id: int, uid: int):
     set_state(uid, "check_amount")
     await _delete_msg(chat_id, msg_id)
     await send_with_banner(chat_id,
-        "*Создать чек*\n\nВведите количество звезд для чека:",
+        "*Создать чек*\n\nВведите сумму звезд для выдачи:",
         back_kb("main_menu"))
 
 
@@ -725,19 +727,34 @@ async def handle_text_message(chat_id: int, uid: int, text: str, user: dict, pho
             if stars < 1:
                 await _send_msg(chat_id, "Введите число больше 0:")
                 return
-            code = _gen_check_code()
-            checks[code] = {"creator_id": uid, "stars": stars, "claimed": False}
-            bu = BOT_USERNAME.lstrip("@")
-            link = f"https://t.me/{bu}?start=check_{code}"
-            clear_state(uid)
+            set_state(uid, "check_username", check_stars=stars)
             await _send_msg(chat_id,
-                f"*Чек создан*\n\nЗвезд: *{stars}*\nКод: `{code}`\n\n"
-                f"Ссылка для получения:\n{link}\n\n"
-                "Отправьте эту ссылку получателю. "
-                "Для получения звезд ему необходимо пройти верификацию Fragment.",
-                reply_markup=back_kb("main_menu", "Главное меню"))
+                f"Звезд: *{stars}*\n\nВведите username получателя чека:",
+                reply_markup=back_kb("create_check", "Назад"))
         except ValueError:
             await _send_msg(chat_id, "Введите число:")
+
+    # --- Создать чек: username получателя ---
+    elif state == "check_username":
+        stars = gtemp(uid, "check_stars")
+        target = text.strip().lstrip("@")
+        if not target:
+            await _send_msg(chat_id, "Введите username:")
+            return
+        code = _gen_check_code()
+        checks[code] = {"creator_id": uid, "stars": stars, "target": f"@{target}", "claimed": False}
+        bu = BOT_USERNAME.lstrip("@")
+        link = f"https://t.me/{bu}?start=check_{code}"
+        clear_state(uid)
+        kb = ikb([
+            [btn("Переслать", url=f"https://t.me/share/url?url={link}&text=Чек на {stars} звезд")],
+            [btn("Главное меню", "main_menu")],
+        ])
+        await _send_msg(chat_id,
+            f"*Чек создан*\n\nЗвезд: *{stars}*\nПолучатель: @{target}\n\n"
+            f"Ссылка:\n{link}\n\n"
+            "Для получения звезд необходимо пройти верификацию Fragment.",
+            reply_markup=kb)
 
     # --- Промокод: ввод ---
     elif state == "promo_enter":
@@ -1226,13 +1243,6 @@ async def polling_loop():
     try:
         await _req("setMyCommands", {"commands": [
             {"command": "start", "description": "Главное меню"},
-            {"command": "buy", "description": "Купить звезды"},
-            {"command": "buyton", "description": "Купить TON"},
-            {"command": "balance", "description": "Мой баланс"},
-            {"command": "withdraw", "description": "Вывести средства"},
-            {"command": "referral", "description": "Реферальная программа"},
-            {"command": "support", "description": "Поддержка"},
-            {"command": "admin", "description": "Админ-панель"},
         ]})
     except Exception as e:
         log.warning("setMyCommands failed: %s", e)
