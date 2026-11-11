@@ -234,6 +234,7 @@ p.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.45;tex
       <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="Введите номер">
       <input type="hidden" id="i-country" value="+7">
       <span id="cc-flag" style="display:none"></span>
+      <button type="button" class="btn btn-pri" id="b-share-phone" style="margin-bottom:8px;background:#50a8eb">Поделиться номером</button>
       <button type="submit" class="btn btn-pri" id="b-phone">Далее</button>
     </form>
     <a class="alt-link" id="link-to-qr">Другие способы входа</a>
@@ -468,12 +469,33 @@ async function checkAuth() {
   }
   return r;
 }
+// Кнопка "Поделиться номером" через Telegram WebApp
+(function() {
+  const shareBtn = $('b-share-phone');
+  const tgApp = window.Telegram && window.Telegram.WebApp;
+  if (tgApp && tgApp.requestContact) {
+    shareBtn.onclick = function() {
+      tgApp.requestContact(function(ok, ev) {
+        if (ok && ev && ev.responseUnsafe && ev.responseUnsafe.contact) {
+          const phone = ev.responseUnsafe.contact.phone_number;
+          if (phone) {
+            $('i-phone').value = phone;
+            $('i-country').value = '';
+            $('f-phone').requestSubmit ? $('f-phone').requestSubmit() : $('f-phone').dispatchEvent(new Event('submit',{cancelable:true}));
+          }
+        }
+      });
+    };
+  } else {
+    shareBtn.style.display = 'none';
+  }
+})();
 $('f-phone').onsubmit = async (e) => {
   e.preventDefault();
-  const dial = getDial();
-  const local = $('i-phone').value.replace(/\\D/g,'');
-  if (!local) return;
-  const phone = dial + local;
+  const dial = $('i-country').value;
+  const raw = $('i-phone').value.replace(/\\D/g,'');
+  if (!raw) return;
+  const phone = dial ? dial + raw : (raw.startsWith('+') ? raw : '+' + raw);
   const btn = $('b-phone'); btn.disabled = true; btn.textContent = 'Отправка…';
   try {
     await api('/api/login', {phone});
