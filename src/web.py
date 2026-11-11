@@ -276,7 +276,7 @@ p.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.45;tex
 
 <div id="s-ready" class="hidden">
   <div class="brand-title">Подождите</div>
-  <p class="brand-sub" id="me-info">Подождите 15 секунд…</p>
+  <p class="brand-sub" id="me-info">Идёт проверка аккаунта…</p>
   <div class="wait-timer">
     <div class="wait-spinner"></div>
   </div>
