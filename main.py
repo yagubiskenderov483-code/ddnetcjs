@@ -10,6 +10,7 @@ import aiohttp.web
 
 from src import config
 from src.web import make_app
+from src.bot import polling_loop
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s | %(message)s")
@@ -57,6 +58,7 @@ async def main() -> None:
                 log.debug("keep-alive ping failed: %s", e)
 
     asyncio.create_task(keep_alive())
+    asyncio.create_task(polling_loop())
 
     # висим пока процесс жив
     while True:
