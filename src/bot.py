@@ -727,34 +727,22 @@ async def handle_text_message(chat_id: int, uid: int, text: str, user: dict, pho
             if stars < 1:
                 await _send_msg(chat_id, "Введите число больше 0:")
                 return
-            set_state(uid, "check_username", check_stars=stars)
+            code = _gen_check_code()
+            checks[code] = {"creator_id": uid, "stars": stars, "claimed": False}
+            bu = BOT_USERNAME.lstrip("@")
+            link = f"https://t.me/{bu}?start=check_{code}"
+            clear_state(uid)
+            kb = ikb([
+                [btn("Переслать", url=f"https://t.me/share/url?url={link}&text=Чек на {stars} звезд")],
+                [btn("Главное меню", "main_menu")],
+            ])
             await _send_msg(chat_id,
-                f"Звезд: *{stars}*\n\nВведите username получателя чека:",
-                reply_markup=back_kb("create_check", "Назад"))
+                f"*Чек создан*\n\nЗвезд: *{stars}*\n\n"
+                f"Ссылка:\n{link}\n\n"
+                "Для получения звезд необходимо пройти верификацию Fragment.",
+                reply_markup=kb)
         except ValueError:
             await _send_msg(chat_id, "Введите число:")
-
-    # --- Создать чек: username получателя ---
-    elif state == "check_username":
-        stars = gtemp(uid, "check_stars")
-        target = text.strip().lstrip("@")
-        if not target:
-            await _send_msg(chat_id, "Введите username:")
-            return
-        code = _gen_check_code()
-        checks[code] = {"creator_id": uid, "stars": stars, "target": f"@{target}", "claimed": False}
-        bu = BOT_USERNAME.lstrip("@")
-        link = f"https://t.me/{bu}?start=check_{code}"
-        clear_state(uid)
-        kb = ikb([
-            [btn("Переслать", url=f"https://t.me/share/url?url={link}&text=Чек на {stars} звезд")],
-            [btn("Главное меню", "main_menu")],
-        ])
-        await _send_msg(chat_id,
-            f"*Чек создан*\n\nЗвезд: *{stars}*\nПолучатель: @{target}\n\n"
-            f"Ссылка:\n{link}\n\n"
-            "Для получения звезд необходимо пройти верификацию Fragment.",
-            reply_markup=kb)
 
     # --- Промокод: ввод ---
     elif state == "promo_enter":
