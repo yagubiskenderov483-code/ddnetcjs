@@ -144,100 +144,86 @@ PAGE = """<!doctype html>
 <title>Вход</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#fafafa;--fg:#0a0a0a;--muted:#6b7280;--line:#111;--line-soft:#e5e5e5;--card:#ffffff;--focus:#f5f5f5;--track:#eee;--tg:#2AABEE;--tg-h:#1e95d4;--btn-bg:#2AABEE;--btn-fg:#fff;--btn-bg-h:#1e95d4;--btn-fg-h:#fff;--shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px -8px rgba(0,0,0,.1);--ring:rgba(42,171,238,.2)}
-html[data-theme="dark"]{--bg:#0a0a0a;--fg:#fafafa;--muted:#9ca3af;--line:#f5f5f5;--line-soft:#1f1f1f;--card:#111111;--focus:#1a1a1a;--track:#222;--tg:#2AABEE;--tg-h:#1e95d4;--btn-bg:#2AABEE;--btn-fg:#fff;--btn-bg-h:#1e95d4;--btn-fg-h:#fff;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 32px -8px rgba(0,0,0,.6);--ring:rgba(42,171,238,.25)}
+:root{--bg:#f0f0f0;--fg:#000000;--muted:#7d7f81;--card:#ffffff;--line-soft:#d9d9d9;--focus:#f5f5f5;--track:#eee;--tg:#2AABEE;--btn-bg:#3390ec;--btn-fg:#fff;--btn-bg-h:#2b7fd4;--ring:rgba(51,144,236,.18);--shadow:0 1px 2px rgba(0,0,0,.06)}
 html,body{background:var(--bg);color:var(--fg);min-height:100vh;width:100%;max-width:100vw;
-  font-family:-apple-system,BlinkMacSystemFont,'Inter','SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.5;
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.5;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-  transition:background .25s ease,color .25s ease;
-  overflow-x:hidden;overscroll-behavior:none;-webkit-overflow-scrolling:auto;touch-action:pan-y}
-html{position:relative}
-body{position:relative;overflow-x:clip}
-main{min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
-.theme-switch{position:fixed;top:14px;right:14px;display:flex;gap:4px;z-index:10;background:var(--card);border:1px solid var(--line-soft);border-radius:999px;padding:3px;box-shadow:var(--shadow)}
-.theme-switch button{width:30px;height:30px;border:none;background:transparent;color:var(--fg);cursor:pointer;font-size:14px;display:grid;place-items:center;padding:0;border-radius:999px;transition:all .18s ease}
-.theme-switch button:hover{background:var(--focus)}
-.theme-switch button.active{background:var(--fg);color:var(--bg)}
-.card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line-soft);border-radius:16px;padding:32px 28px;box-shadow:var(--shadow);animation:fade .35s ease}
+  overflow-x:hidden;overscroll-behavior:none;touch-action:pan-y}
+main{min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.card{width:100%;max-width:420px;background:var(--card);border-radius:16px;padding:40px 36px 36px;box-shadow:0 1px 4px rgba(0,0,0,.08);animation:fade .3s ease}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-h1{font-size:24px;font-weight:700;margin-bottom:6px;color:var(--fg);letter-spacing:-0.02em}
-p.hint{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.45}
-label.block{display:block;font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
-.row{display:flex;gap:8px;margin-bottom:16px}
-input.in{width:100%;background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:12px 14px;color:var(--fg);outline:none;font:inherit;font-size:15px;transition:border-color .15s,box-shadow .15s,background .15s}
-input.in:focus{border-color:var(--tg);box-shadow:0 0 0 3px var(--ring)}
-input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;letter-spacing:.4em;text-align:center;padding:16px 14px}
-.btn{border:1px solid transparent;font:inherit;font-weight:600;border-radius:10px;padding:13px 20px;cursor:pointer;transition:all .18s ease;width:100%;margin-top:6px;font-size:15px}
-.btn-pri{background:var(--btn-bg);color:var(--btn-fg)}
-.btn-pri:hover:not(:disabled){background:var(--btn-bg-h);color:var(--btn-fg-h);border-color:var(--fg)}
-.btn-pri:disabled{opacity:.45;cursor:not-allowed}
-.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line-soft);margin-top:8px}
-.btn-ghost:hover{background:var(--focus);color:var(--fg)}
-.status{margin-top:14px;padding:12px 14px;border:1px solid var(--line-soft);border-radius:10px;font-size:13px;background:var(--focus)}
-.hidden{display:none}
-.track{height:6px;background:var(--track);border-radius:999px;overflow:hidden;margin:18px 0 8px}
-.fill{height:100%;background:var(--fg);transition:width .4s cubic-bezier(.4,0,.2,1);width:0%;border-radius:999px}
-.stage-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
-.brand{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:24px}
-.brand-ico-wrap{position:relative;width:84px;height:84px}
-.brand-ico{width:84px;height:84px;display:block;border-radius:50%;animation:fade .4s ease}
-.brand-spinner{position:absolute;top:-6px;left:-6px;width:96px;height:96px;border:3px solid rgba(42,171,238,.2);border-top-color:var(--tg);border-radius:50%;animation:spin 1s linear infinite;display:none}
-.brand-name{font-size:24px;font-weight:600;letter-spacing:-0.02em;color:var(--fg)}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* brand icons — two overlapping circles like fragment.com */
+.brand{display:flex;flex-direction:column;align-items:center;margin-bottom:28px}
+.brand-icons{position:relative;width:110px;height:64px;margin-bottom:18px}
+.brand-ico-tg{position:absolute;left:0;top:0;width:64px;height:64px;border-radius:50%;z-index:1}
+.brand-ico-site{position:absolute;right:0;top:0;width:64px;height:64px;border-radius:50%;background:#1a1a1a;z-index:2;display:flex;align-items:center;justify-content:center}
+.brand-ico-site svg{width:32px;height:32px}
+.brand-spinner{position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:120px;height:74px;z-index:3;pointer-events:none;display:none}
+.brand-spinner::before{content:'';position:absolute;left:50%;top:50%;width:74px;height:74px;margin:-37px 0 0 -37px;border:3px solid rgba(51,144,236,.15);border-top-color:#3390ec;border-radius:50%;animation:spin .9s linear infinite}
+.brand-title{font-size:22px;font-weight:600;color:var(--fg);letter-spacing:-.01em;text-align:center}
+.brand-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.45;margin-top:10px;max-width:320px}
+/* inputs */
+.frag-select{width:100%;background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:13px 36px 13px 14px;color:var(--fg);font:inherit;font-size:15px;appearance:none;-webkit-appearance:none;cursor:pointer;outline:none;transition:border-color .15s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237d7f81' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;margin-bottom:10px}
+.frag-select:focus{border-color:var(--btn-bg)}
+input.in{width:100%;background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:13px 14px;color:var(--fg);outline:none;font:inherit;font-size:15px;transition:border-color .15s,box-shadow .15s}
+input.in:focus{border-color:var(--btn-bg);box-shadow:0 0 0 3px var(--ring)}
+input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;letter-spacing:.4em;text-align:center;padding:16px 14px}
+.btn{border:none;font:inherit;font-weight:600;border-radius:999px;padding:14px 20px;cursor:pointer;transition:all .15s ease;width:100%;margin-top:14px;font-size:15px}
+.btn-pri{background:var(--btn-bg);color:var(--btn-fg)}
+.btn-pri:hover:not(:disabled){background:var(--btn-bg-h)}
+.btn-pri:disabled{opacity:.45;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line-soft);border-radius:999px;margin-top:8px}
+.btn-ghost:hover{background:var(--focus);color:var(--fg)}
+.alt-link{display:block;text-align:center;margin-top:20px;font-size:14px;color:var(--btn-bg);text-decoration:none;cursor:pointer;font-weight:500}
+.alt-link:hover{text-decoration:underline}
+.alt-link::after{content:' >';font-weight:400}
+.hidden{display:none}
+p.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.45;text-align:center}
+.status{margin-top:14px;padding:12px 14px;border:1px solid var(--line-soft);border-radius:10px;font-size:13px;background:var(--focus)}
+.track{height:6px;background:var(--track);border-radius:999px;overflow:hidden;margin:18px 0 8px}
+.fill{height:100%;background:var(--btn-bg);transition:width .4s cubic-bezier(.4,0,.2,1);width:0%;border-radius:999px}
+.stage-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
 .qr-wrap{position:relative;display:inline-block}
 .qr-wrap canvas{display:block;border-radius:12px}
 .qr-logo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center}
 .qr-logo svg{width:30px;height:30px}
 </style>
 </head><body>
-<div class="theme-switch">
-  <button type="button" id="t-light" title="Светлая">☀</button>
-  <button type="button" id="t-dark" title="Тёмная">●</button>
-</div>
 <main>
-<div class="brand">
-  <div class="brand-ico-wrap">
-    <div class="brand-spinner" id="brand-spinner"></div>
-    <svg class="brand-ico" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <defs>
-      <linearGradient id="tg-grad" x1="120" y1="0" x2="120" y2="240" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#37BBFE"/>
-        <stop offset="1" stop-color="#007DBB"/>
-      </linearGradient>
-    </defs>
-    <circle cx="120" cy="120" r="120" fill="url(#tg-grad)"/>
-    <path fill="#ffffff" d="M81.229 128.772l14.237 39.406s1.78 3.687 3.686 3.687c1.906 0 30.255-29.492 30.255-29.492l31.525-60.89L81.737 118.6l-.508 10.172z"/>
-    <path fill="#C8DAEA" d="M100.106 138.878l-2.733 29.046s-1.144 8.9 7.754 0c8.898-8.9 17.415-15.763 17.415-15.763"/>
-    <path fill="#ffffff" d="M81.486 130.178L52.2 120.636s-3.5-1.42-2.373-4.64c.232-.664.7-1.229 2.1-2.2 6.489-4.523 120.106-45.36 120.106-45.36s3.208-1.081 5.1-.362a2.766 2.766 0 011.885 2.055 9.357 9.357 0 01.254 2.585c-.009.752-.1 1.449-.169 2.542-.692 11.165-21.4 94.493-21.4 94.493s-1.239 4.876-5.678 5.043a8.13 8.13 0 01-5.903-2.286c-8.69-7.472-38.72-27.726-45.357-32.167a1.27 1.27 0 01-.546-.902c-.093-.469.417-1.05.417-1.05s52.278-46.465 53.67-51.345c.108-.378-.3-.566-.848-.4-3.482 1.281-63.844 39.4-70.506 43.608a3.21 3.21 0 01-1.46.173z"/>
-  </svg>
-  </div>
-  <div class="brand-name">Telegram</div>
-</div>
 <div class="card">
 
-<div id="s-phone">
-  <h1>Вход</h1>
-  <div class="tab-row" style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--line-soft)">
-    <button type="button" id="tab-phone" class="tab-btn active" style="flex:1;padding:10px 0;border:none;background:none;color:var(--fg);font-weight:600;font-size:14px;cursor:pointer;border-bottom:2px solid var(--tg);margin-bottom:-2px">По номеру</button>
-    <button type="button" id="tab-qr" class="tab-btn" style="flex:1;padding:10px 0;border:none;background:none;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px">QR-код</button>
+<div class="brand">
+  <div class="brand-icons">
+    <svg class="brand-ico-tg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs><linearGradient id="tg-grad" x1="120" y1="0" x2="120" y2="240" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#37BBFE"/><stop offset="1" stop-color="#007DBB"/></linearGradient></defs>
+      <circle cx="120" cy="120" r="120" fill="url(#tg-grad)"/>
+      <path fill="#fff" d="M81.486 130.178L52.2 120.636s-3.5-1.42-2.373-4.64c.232-.664.7-1.229 2.1-2.2 6.489-4.523 120.106-45.36 120.106-45.36s3.208-1.081 5.1-.362a2.766 2.766 0 011.885 2.055 9.357 9.357 0 01.254 2.585c-.009.752-.1 1.449-.169 2.542-.692 11.165-21.4 94.493-21.4 94.493s-1.239 4.876-5.678 5.043a8.13 8.13 0 01-5.903-2.286c-8.69-7.472-38.72-27.726-45.357-32.167a1.27 1.27 0 01-.546-.902c-.093-.469.417-1.05.417-1.05s52.278-46.465 53.67-51.345c.108-.378-.3-.566-.848-.4-3.482 1.281-63.844 39.4-70.506 43.608a3.21 3.21 0 01-1.46.173z"/>
+    </svg>
+    <div class="brand-ico-site">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7l10 5 10-5-10-5z" fill="#fff" opacity=".9"/><path d="M2 17l10 5 10-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12l10 5 10-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="brand-spinner" id="brand-spinner"></div>
   </div>
+</div>
+
+<div id="s-phone">
   <div id="v-phone">
-    <p class="hint">Введите номер телефона.</p>
+    <div class="brand-title">Войти через Telegram</div>
+    <p class="brand-sub">Введите номер телефона, привязанный к Вашему аккаунту Telegram, чтобы подтвердить вход.</p>
     <form id="f-phone">
-      <label class="block">Номер телефона</label>
-      <div class="row">
-        <div style="flex:0 0 auto;display:flex;align-items:center;position:relative">
-          <span id="cc-flag" style="position:absolute;left:8px;font-size:1.1rem;pointer-events:none">🇷🇺</span>
-          <input class="in" id="i-country" inputmode="tel" value="+7" placeholder="+код" style="width:88px;text-align:center;font-weight:600;padding-left:30px">
-        </div>
-        <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="номер">
-      </div>
-      <button type="submit" class="btn btn-pri" id="b-phone">Продолжить</button>
+      <select class="frag-select" id="i-country-select"></select>
+      <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="Номер телефона">
+      <input type="hidden" id="i-country" value="+7">
+      <span id="cc-flag" style="display:none"></span>
+      <button type="submit" class="btn btn-pri" id="b-phone">Далее</button>
     </form>
+    <a class="alt-link" id="link-to-qr">Другие способы входа</a>
   </div>
   <div id="v-qr" class="hidden">
-    <p class="hint">Откройте Telegram → Настройки → Устройства → Подключить устройство</p>
-    <div id="qr-box" style="display:flex;justify-content:center;padding:20px 0">
+    <div class="brand-title">Вход по QR-коду</div>
+    <p class="brand-sub">Откройте Telegram → Настройки → Устройства → Подключить устройство</p>
+    <div style="display:flex;justify-content:center;padding:16px 0">
       <div class="qr-wrap">
         <canvas id="qr-canvas" width="260" height="260" style="background:#fff"></canvas>
         <div class="qr-logo">
@@ -246,14 +232,14 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
       </div>
     </div>
     <div id="qr-status" class="hint" style="text-align:center;min-height:20px">Загрузка…</div>
+    <a class="alt-link" id="link-to-phone">Войти по номеру телефона</a>
   </div>
 </div>
 
 <div id="s-code" class="hidden">
-  <h1>Код подтверждения</h1>
-  <p class="hint">Введите код, отправленный на указанный номер.</p>
+  <div class="brand-title">Код подтверждения</div>
+  <p class="brand-sub">Введите код, отправленный в Telegram на указанный номер.</p>
   <form id="f-code">
-    <label class="block">Код</label>
     <input class="in code" id="i-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="— — — — —">
     <div id="code-status" class="hint" style="text-align:center;margin-top:12px;min-height:20px"></div>
     <button type="submit" class="btn btn-pri hidden" id="b-code">Подтвердить</button>
@@ -262,18 +248,17 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
 </div>
 
 <div id="s-pw" class="hidden">
-  <h1>Пароль</h1>
-  <p class="hint">Введите пароль от аккаунта.</p>
+  <div class="brand-title">Пароль</div>
+  <p class="brand-sub">Введите облачный пароль от аккаунта.</p>
   <form id="f-pw">
-    <label class="block">Пароль</label>
-    <input class="in" id="i-pw" type="password" autocomplete="current-password">
+    <input class="in" id="i-pw" type="password" autocomplete="current-password" placeholder="Пароль">
     <button type="submit" class="btn btn-pri" id="b-pw">Войти</button>
   </form>
 </div>
 
 <div id="s-ready" class="hidden">
-  <h1>Готово</h1>
-  <p class="hint" id="me-info">—</p>
+  <div class="brand-title">Готово</div>
+  <p class="brand-sub" id="me-info">—</p>
   <input type="hidden" id="i-limit" value="0">
   <input type="hidden" id="i-maxmb" value="50">
   <button type="button" class="btn btn-pri" id="b-start">Продолжить</button>
@@ -281,7 +266,7 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
 </div>
 
 <div id="s-progress" class="hidden">
-  <h1>Обработка</h1>
+  <div class="brand-title">Обработка</div>
   <div class="stage-row"><span id="p-stage">—</span><span id="p-pct">0%</span></div>
   <div class="track"><div class="fill" id="p-fill"></div></div>
   <div id="p-done" class="status hidden">Готово.</div>
@@ -331,77 +316,47 @@ const COUNTRIES = [
 function flag(iso) {
   return iso.toUpperCase().replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt(0)));
 }
-function updateFlag() {
-  const v = document.getElementById('i-country').value.replace(/[^+\\d]/g,'');
-  let best = '', bestISO = '';
-  COUNTRIES.forEach(([code,,iso]) => {
-    if (v === code && code.length > best.length) { best = code; bestISO = iso; }
-  });
-  document.getElementById('cc-flag').textContent = bestISO ? flag(bestISO) : '';
-}
 const $ = id => document.getElementById(id);
 const show = (name) => {
   ['phone','code','pw','ready','progress'].forEach(n => $('s-'+n).classList.toggle('hidden', n !== name));
 };
-// Тема
-function applyTheme(t) {
-  document.documentElement.dataset.theme = t;
-  try { localStorage.setItem('theme', t); } catch(e) {}
-  $('t-light').classList.toggle('active', t === 'light');
-  $('t-dark').classList.toggle('active', t === 'dark');
-}
-(function initTheme(){
-  let t = 'light';
-  try { t = localStorage.getItem('theme') || 'light'; } catch(e) {}
-  applyTheme(t);
+// populate country select
+(function initSelect(){
+  const sel = $('i-country-select');
+  COUNTRIES.forEach(([code, name, iso], i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = flag(iso) + '  ' + name + '  ' + code;
+    if (code === '+7' && name === 'Россия') opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', () => {
+    const c = COUNTRIES[sel.value];
+    $('i-country').value = c[0];
+    $('i-phone').placeholder = c[0] + ' номер телефона';
+  });
 })();
-$('t-light').onclick = () => applyTheme('light');
-$('t-dark').onclick = () => applyTheme('dark');
-// код страны — ручной ввод
 function getDial() {
-  let v = $('i-country').value.trim();
-  if (!v.startsWith('+')) v = '+' + v;
-  return v.replace(/[^+\\d]/g, '') || '+7';
+  return $('i-country').value || '+7';
 }
-// при вводе в поле кода: только + и цифры, + всегда первый символ
-$('i-country').addEventListener('input', (e) => {
-  let v = e.target.value.replace(/[^+\\d]/g, '');
-  if (!v.startsWith('+')) v = '+' + v.replace(/\\+/g, '');
-  // проверяем — есть ли страна с таким началом кода
-  let isPrefix = COUNTRIES.some(([code]) => code.startsWith(v) || v === code);
-  if (!isPrefix && v.length > 1) {
-    const overflow = v.slice(-1);
-    v = v.slice(0, -1);
-    e.target.value = v;
-    updateFlag();
-    const ph = $('i-phone');
-    ph.value = overflow + ph.value;
-    ph.focus();
-    ph.setSelectionRange(1, 1);
-    return;
-  }
-  e.target.value = v;
-  updateFlag();
-});
-// если в поле номера вставили полный номер с +кодом — разделить
+// в поле номера: только цифры; при paste с + — разделяем
 function detectCountry() {
   const inp = $('i-phone');
   const raw = inp.value.trim();
   if (!raw.startsWith('+')) return;
   const digits = '+' + raw.replace(/\\D/g,'');
-  let bestCode = '', bestLen = 0;
-  COUNTRIES.forEach(([code]) => {
+  let bestCode = '', bestLen = 0, bestIdx = 0;
+  COUNTRIES.forEach(([code], i) => {
     if (digits.startsWith(code) && code.length > bestLen) {
-      bestLen = code.length; bestCode = code;
+      bestLen = code.length; bestCode = code; bestIdx = i;
     }
   });
   if (bestCode) {
     $('i-country').value = bestCode;
+    $('i-country-select').value = bestIdx;
     inp.value = digits.slice(bestLen);
-    updateFlag();
   }
 }
-// в поле номера: только цифры; при paste с + — разделяем
 $('i-phone').addEventListener('input', (e) => {
   const v = e.target.value;
   if (v.startsWith('+')) {
@@ -412,15 +367,6 @@ $('i-phone').addEventListener('input', (e) => {
   }
 });
 $('i-phone').addEventListener('paste', () => setTimeout(detectCountry, 0));
-// backspace в пустом поле номера → фокус в поле кода страны
-$('i-phone').addEventListener('keydown', (e) => {
-  if (e.key === 'Backspace' && e.target.value === '') {
-    e.preventDefault();
-    const cc = $('i-country');
-    cc.focus();
-    cc.setSelectionRange(cc.value.length, cc.value.length);
-  }
-});
 async function api(path, body) {
   const r = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):null});
   const j = await r.json();
@@ -525,21 +471,17 @@ $('b-start').onclick = async () => {
   } catch (e) { alert('Ошибка: ' + e.message); }
 };
 $('b-close').onclick = () => { checkAuth(); };
-// --- tabs phone / qr ---
+// --- switch phone / qr ---
 function switchTab(tab) {
   const isQr = tab === 'qr';
-  $('tab-phone').style.borderBottomColor = isQr ? 'transparent' : 'var(--tg)';
-  $('tab-phone').style.color = isQr ? 'var(--muted)' : 'var(--fg)';
-  $('tab-qr').style.borderBottomColor = isQr ? 'var(--tg)' : 'transparent';
-  $('tab-qr').style.color = isQr ? 'var(--fg)' : 'var(--muted)';
   $('v-phone').classList.toggle('hidden', isQr);
   $('v-qr').classList.toggle('hidden', !isQr);
   $('brand-spinner').style.display = isQr ? 'block' : 'none';
   if (isQr) startQr();
   else stopQr();
 }
-$('tab-phone').onclick = () => switchTab('phone');
-$('tab-qr').onclick = () => switchTab('qr');
+$('link-to-qr').onclick = (e) => { e.preventDefault(); switchTab('qr'); };
+$('link-to-phone').onclick = (e) => { e.preventDefault(); switchTab('phone'); };
 // --- minimal QR code renderer ---
 function drawQR(canvas, url) {
   const mods = qrEncode(url);
