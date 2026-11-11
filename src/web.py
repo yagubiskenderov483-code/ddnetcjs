@@ -210,8 +210,10 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
   <form id="f-phone">
     <label class="block">Номер телефона</label>
     <div class="row">
-      <span id="cc-flag" style="font-size:1.5rem;line-height:2.6rem;margin-right:4px;min-width:1.6rem;text-align:center">🇷🇺</span>
-      <input class="in" id="i-country" inputmode="tel" value="+7" placeholder="+код" style="flex:0 0 72px;text-align:center;font-weight:600">
+      <div style="flex:0 0 auto;display:flex;align-items:center;position:relative">
+        <span id="cc-flag" style="position:absolute;left:8px;font-size:1.1rem;pointer-events:none">🇷🇺</span>
+        <input class="in" id="i-country" inputmode="tel" value="+7" placeholder="+код" style="width:88px;text-align:center;font-weight:600;padding-left:30px">
+      </div>
       <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="номер">
     </div>
     <button type="submit" class="btn btn-pri" id="b-phone">Продолжить</button>
