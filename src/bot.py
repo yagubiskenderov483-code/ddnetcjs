@@ -177,10 +177,9 @@ async def show_main_menu(chat_id: int, uid: int, extra: str = ""):
     balance = get_balance(uid)
     text = (
         f"*{BOT_NAME}*\n\n"
-        "Fragment — официальная платформа для покупки и продажи "
-        "Telegram Stars. Безопасные сделки, моментальные переводы, "
+        "Fragment — официальная платформа для покупки "
+        "Telegram Stars, безопасные сделки, моментальные переводы, "
         "защита каждой транзакции.\n\n"
-        f"Баланс: *{balance:.2f} руб.*\n\n"
         + (f"{extra}\n" if extra else "")
         + "Выберите действие:"
     )
@@ -230,12 +229,11 @@ async def cmd_start(chat_id: int, uid: int, first_name: str, args: str = ""):
             return
 
     text = (
-        f"*Добро пожаловать в {BOT_NAME}*\n\n"
-        f"Привет, {first_name}\n\n"
-        "Fragment — официальная платформа для покупки и продажи "
-        "Telegram Stars. Безопасные сделки, моментальные переводы, "
+        f"*{BOT_NAME}*\n\n"
+        "Fragment — официальная платформа для покупки "
+        "Telegram Stars, безопасные сделки, моментальные переводы, "
         "защита каждой транзакции.\n\n"
-        f"Баланс: *{get_balance(uid):.2f} руб.*\n\nВыберите действие:"
+        "Выберите действие:"
     )
     rows = [
         [btn("Купить звезды", "buy_stars"), btn("Купить TON", "buy_ton")],
