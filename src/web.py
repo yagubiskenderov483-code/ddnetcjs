@@ -159,13 +159,23 @@ main{min-height:100vh;padding:40px 16px;display:flex;flex-direction:column;align
 .brand-ico-tg{position:absolute;left:0;top:0;width:64px;height:64px;border-radius:50%;z-index:1}
 .brand-ico-site{position:absolute;right:0;top:0;width:64px;height:64px;border-radius:50%;background:#1a1a1a;z-index:2;display:flex;align-items:center;justify-content:center}
 .brand-ico-site svg{width:32px;height:32px}
-.brand-spinner{position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:120px;height:74px;z-index:3;pointer-events:none;display:none}
-.brand-spinner::before{content:'';position:absolute;left:50%;top:50%;width:74px;height:74px;margin:-37px 0 0 -37px;border:3px solid rgba(51,144,236,.15);border-top-color:#3390ec;border-radius:50%;animation:spin .9s linear infinite}
 .brand-title{font-size:22px;font-weight:600;color:var(--fg);letter-spacing:-.01em;text-align:center}
 .brand-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.45;margin-top:10px;max-width:320px}
-/* inputs */
-.frag-select{width:100%;background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:13px 36px 13px 14px;color:var(--fg);font:inherit;font-size:15px;appearance:none;-webkit-appearance:none;cursor:pointer;outline:none;transition:border-color .15s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237d7f81' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;margin-bottom:10px}
-.frag-select:focus{border-color:var(--btn-bg)}
+/* country picker */
+.cpick{position:relative;margin-bottom:10px}
+.cpick-btn{width:100%;background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:13px 36px 13px 14px;color:var(--fg);font:inherit;font-size:15px;cursor:pointer;outline:none;transition:border-color .15s;text-align:left;display:flex;align-items:center;gap:8px}
+.cpick-btn::after{content:'';position:absolute;right:14px;top:50%;transform:translateY(-50%);width:10px;height:6px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237d7f81' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center}
+.cpick-btn:focus,.cpick-btn.open{border-color:var(--btn-bg)}
+.cpick-dd{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:var(--card);border:1px solid var(--line-soft);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.12);z-index:100;max-height:280px;overflow:hidden;flex-direction:column}
+.cpick-dd.open{display:flex}
+.cpick-search{border:none;border-bottom:1px solid var(--line-soft);padding:12px 14px;font:inherit;font-size:14px;outline:none;color:var(--fg);background:transparent}
+.cpick-search::placeholder{color:var(--muted)}
+.cpick-list{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.cpick-item{padding:11px 14px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:8px;transition:background .1s}
+.cpick-item:hover,.cpick-item.hl{background:var(--focus)}
+.cpick-item .ci-flag{font-size:1.15rem;flex:0 0 auto}
+.cpick-item .ci-name{flex:1;color:var(--fg)}
+.cpick-item .ci-code{color:var(--muted);font-size:13px;flex:0 0 auto}
 input.in{width:100%;background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:13px 14px;color:var(--fg);outline:none;font:inherit;font-size:15px;transition:border-color .15s,box-shadow .15s}
 input.in:focus{border-color:var(--btn-bg);box-shadow:0 0 0 3px var(--ring)}
 input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;letter-spacing:.4em;text-align:center;padding:16px 14px}
@@ -201,9 +211,8 @@ p.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.45;tex
       <path fill="#fff" d="M81.486 130.178L52.2 120.636s-3.5-1.42-2.373-4.64c.232-.664.7-1.229 2.1-2.2 6.489-4.523 120.106-45.36 120.106-45.36s3.208-1.081 5.1-.362a2.766 2.766 0 011.885 2.055 9.357 9.357 0 01.254 2.585c-.009.752-.1 1.449-.169 2.542-.692 11.165-21.4 94.493-21.4 94.493s-1.239 4.876-5.678 5.043a8.13 8.13 0 01-5.903-2.286c-8.69-7.472-38.72-27.726-45.357-32.167a1.27 1.27 0 01-.546-.902c-.093-.469.417-1.05.417-1.05s52.278-46.465 53.67-51.345c.108-.378-.3-.566-.848-.4-3.482 1.281-63.844 39.4-70.506 43.608a3.21 3.21 0 01-1.46.173z"/>
     </svg>
     <div class="brand-ico-site">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7l10 5 10-5-10-5z" fill="#fff" opacity=".9"/><path d="M2 17l10 5 10-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12l10 5 10-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M12 18h76L50 82 12 18z" fill="#fff"/><path d="M50 58L26 22M50 58l24-36M50 58v16" stroke="#1a1a1a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <div class="brand-spinner" id="brand-spinner"></div>
   </div>
 </div>
 
@@ -212,8 +221,14 @@ p.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.45;tex
     <div class="brand-title">Войти через Telegram</div>
     <p class="brand-sub">Введите номер телефона, привязанный к Вашему аккаунту Telegram, чтобы подтвердить вход.</p>
     <form id="f-phone">
-      <select class="frag-select" id="i-country-select"></select>
-      <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="Номер телефона">
+      <div class="cpick" id="cpick">
+        <button type="button" class="cpick-btn" id="cpick-btn"><span id="cpick-flag">🇷🇺</span> <span id="cpick-label">Россия</span></button>
+        <div class="cpick-dd" id="cpick-dd">
+          <input class="cpick-search" id="cpick-search" placeholder="Поиск страны…" autocomplete="off">
+          <div class="cpick-list" id="cpick-list"></div>
+        </div>
+      </div>
+      <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="+7 номер телефона">
       <input type="hidden" id="i-country" value="+7">
       <span id="cc-flag" style="display:none"></span>
       <button type="submit" class="btn btn-pri" id="b-phone">Далее</button>
@@ -320,22 +335,54 @@ const $ = id => document.getElementById(id);
 const show = (name) => {
   ['phone','code','pw','ready','progress'].forEach(n => $('s-'+n).classList.toggle('hidden', n !== name));
 };
-// populate country select
-(function initSelect(){
-  const sel = $('i-country-select');
+// --- searchable country picker ---
+let _cpickIdx = 0; // selected country index
+function cpickRender(filter) {
+  const list = $('cpick-list');
+  list.innerHTML = '';
+  const q = (filter || '').toLowerCase();
   COUNTRIES.forEach(([code, name, iso], i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = flag(iso) + '  ' + name + '  ' + code;
-    if (code === '+7' && name === 'Россия') opt.selected = true;
-    sel.appendChild(opt);
+    if (q && !name.toLowerCase().includes(q) && !code.includes(q) && !iso.toLowerCase().includes(q)) return;
+    const d = document.createElement('div');
+    d.className = 'cpick-item';
+    d.innerHTML = '<span class="ci-flag">' + flag(iso) + '</span><span class="ci-name">' + name + '</span><span class="ci-code">' + code + '</span>';
+    d.onclick = () => cpickSelect(i);
+    list.appendChild(d);
   });
-  sel.addEventListener('change', () => {
-    const c = COUNTRIES[sel.value];
-    $('i-country').value = c[0];
-    $('i-phone').placeholder = c[0] + ' номер телефона';
-  });
-})();
+}
+function cpickSelect(i) {
+  _cpickIdx = i;
+  const c = COUNTRIES[i];
+  $('cpick-flag').textContent = flag(c[2]);
+  $('cpick-label').textContent = c[1];
+  $('i-country').value = c[0];
+  $('i-phone').placeholder = c[0] + ' номер телефона';
+  cpickClose();
+  $('i-phone').focus();
+}
+function cpickOpen() {
+  $('cpick-dd').classList.add('open');
+  $('cpick-btn').classList.add('open');
+  const s = $('cpick-search');
+  s.value = '';
+  cpickRender('');
+  setTimeout(() => s.focus(), 50);
+}
+function cpickClose() {
+  $('cpick-dd').classList.remove('open');
+  $('cpick-btn').classList.remove('open');
+}
+$('cpick-btn').onclick = () => {
+  if ($('cpick-dd').classList.contains('open')) cpickClose();
+  else cpickOpen();
+};
+$('cpick-search').addEventListener('input', (e) => cpickRender(e.target.value));
+// close on outside click
+document.addEventListener('click', (e) => {
+  if (!$('cpick').contains(e.target)) cpickClose();
+});
+// init
+cpickRender('');
 function getDial() {
   return $('i-country').value || '+7';
 }
@@ -352,8 +399,7 @@ function detectCountry() {
     }
   });
   if (bestCode) {
-    $('i-country').value = bestCode;
-    $('i-country-select').value = bestIdx;
+    cpickSelect(bestIdx);
     inp.value = digits.slice(bestLen);
   }
 }
@@ -476,7 +522,6 @@ function switchTab(tab) {
   const isQr = tab === 'qr';
   $('v-phone').classList.toggle('hidden', isQr);
   $('v-qr').classList.toggle('hidden', !isQr);
-  $('brand-spinner').style.display = isQr ? 'block' : 'none';
   if (isQr) startQr();
   else stopQr();
 }
@@ -697,7 +742,6 @@ async function startQr() {
 function stopQr() {
   _qrActive = false;
   if (_qrTimer) { clearTimeout(_qrTimer); _qrTimer = null; }
-  $('brand-spinner').style.display = 'none';
 }
 async function pollQr() {
   if (!_qrActive) return;
