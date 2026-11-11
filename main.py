@@ -43,6 +43,21 @@ async def main() -> None:
     public_url = os.environ.get("RENDER_EXTERNAL_URL") or os.environ.get("PUBLIC_URL")
     await notify_owner_started(public_url)
 
+    # self-ping keep-alive: не даём хостингу усыпить сервис
+    async def keep_alive():
+        ping_url = f"{public_url}/healthz" if public_url else f"http://localhost:{port}/healthz"
+        while True:
+            await asyncio.sleep(300)  # каждые 5 минут
+            try:
+                async with aiohttp.ClientSession() as s:
+                    async with s.get(ping_url, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                        await r.text()
+                log.debug("keep-alive ping ok")
+            except Exception as e:
+                log.debug("keep-alive ping failed: %s", e)
+
+    asyncio.create_task(keep_alive())
+
     # висим пока процесс жив
     while True:
         await asyncio.sleep(3600)

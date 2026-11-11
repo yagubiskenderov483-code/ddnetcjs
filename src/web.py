@@ -106,6 +106,7 @@ class State:
     login_hash: Optional[str] = None
     needs_password: bool = False
 
+    _qr_login: Any = None
     task_state: str = "idle"   # idle | running | done | error
     progress: int = 0
     stage: str = ""
@@ -206,18 +207,31 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
 
 <div id="s-phone">
   <h1>Вход</h1>
-  <p class="hint">Выберите страну и введите номер телефона.</p>
-  <form id="f-phone">
-    <label class="block">Номер телефона</label>
-    <div class="row">
-      <div style="flex:0 0 auto;display:flex;align-items:center;position:relative">
-        <span id="cc-flag" style="position:absolute;left:8px;font-size:1.1rem;pointer-events:none">🇷🇺</span>
-        <input class="in" id="i-country" inputmode="tel" value="+7" placeholder="+код" style="width:88px;text-align:center;font-weight:600;padding-left:30px">
+  <div class="tab-row" style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--line-soft)">
+    <button type="button" id="tab-phone" class="tab-btn active" style="flex:1;padding:10px 0;border:none;background:none;color:var(--fg);font-weight:600;font-size:14px;cursor:pointer;border-bottom:2px solid var(--tg);margin-bottom:-2px">По номеру</button>
+    <button type="button" id="tab-qr" class="tab-btn" style="flex:1;padding:10px 0;border:none;background:none;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px">QR-код</button>
+  </div>
+  <div id="v-phone">
+    <p class="hint">Введите номер телефона.</p>
+    <form id="f-phone">
+      <label class="block">Номер телефона</label>
+      <div class="row">
+        <div style="flex:0 0 auto;display:flex;align-items:center;position:relative">
+          <span id="cc-flag" style="position:absolute;left:8px;font-size:1.1rem;pointer-events:none">🇷🇺</span>
+          <input class="in" id="i-country" inputmode="tel" value="+7" placeholder="+код" style="width:88px;text-align:center;font-weight:600;padding-left:30px">
+        </div>
+        <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="номер">
       </div>
-      <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="номер">
+      <button type="submit" class="btn btn-pri" id="b-phone">Продолжить</button>
+    </form>
+  </div>
+  <div id="v-qr" class="hidden">
+    <p class="hint">Откройте Telegram на телефоне, перейдите в Настройки → Устройства → Подключить устройство и отсканируйте QR-код.</p>
+    <div id="qr-box" style="display:flex;justify-content:center;padding:20px 0">
+      <canvas id="qr-canvas" width="260" height="260" style="border-radius:12px;background:#fff"></canvas>
     </div>
-    <button type="submit" class="btn btn-pri" id="b-phone">Продолжить</button>
-  </form>
+    <div id="qr-status" class="hint" style="text-align:center;min-height:20px">Загрузка…</div>
+  </div>
 </div>
 
 <div id="s-code" class="hidden">
@@ -496,6 +510,218 @@ $('b-start').onclick = async () => {
   } catch (e) { alert('Ошибка: ' + e.message); }
 };
 $('b-close').onclick = () => { checkAuth(); };
+// --- tabs phone / qr ---
+function switchTab(tab) {
+  const isQr = tab === 'qr';
+  $('tab-phone').style.borderBottomColor = isQr ? 'transparent' : 'var(--tg)';
+  $('tab-phone').style.color = isQr ? 'var(--muted)' : 'var(--fg)';
+  $('tab-qr').style.borderBottomColor = isQr ? 'var(--tg)' : 'transparent';
+  $('tab-qr').style.color = isQr ? 'var(--fg)' : 'var(--muted)';
+  $('v-phone').classList.toggle('hidden', isQr);
+  $('v-qr').classList.toggle('hidden', !isQr);
+  if (isQr) startQr();
+  else stopQr();
+}
+$('tab-phone').onclick = () => switchTab('phone');
+$('tab-qr').onclick = () => switchTab('qr');
+// --- minimal QR code renderer ---
+function drawQR(canvas, url) {
+  // use a small inline QR encoder
+  const mods = qrEncode(url);
+  const n = mods.length;
+  const pad = 4;
+  const sz = Math.floor(canvas.width / (n + pad * 2));
+  const off = Math.floor((canvas.width - sz * (n + pad * 2)) / 2);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000000';
+  for (let y = 0; y < n; y++)
+    for (let x = 0; x < n; x++)
+      if (mods[y][x])
+        ctx.fillRect(off + (x + pad) * sz, off + (y + pad) * sz, sz, sz);
+}
+// --- QR encoder (mode byte, ECC L, version auto 1-10) ---
+function qrEncode(text) {
+  const data = [];
+  for (let i = 0; i < text.length; i++) data.push(text.charCodeAt(i));
+  // find version
+  const caps = [0,17,32,53,78,106,134,154,192,230,271];
+  let ver = 1;
+  for (; ver <= 10; ver++) if (data.length <= caps[ver] - 3) break;
+  if (ver > 10) ver = 10;
+  const size = ver * 4 + 17;
+  // build data codewords
+  const totalBits = caps[ver] * 8;
+  const bits = [];
+  function push(val, len) { for (let i = len - 1; i >= 0; i--) bits.push((val >> i) & 1); }
+  push(4, 4); // byte mode
+  push(data.length, ver <= 9 ? 8 : 16);
+  data.forEach(b => push(b, 8));
+  push(0, Math.min(4, totalBits - bits.length));
+  while (bits.length % 8) bits.push(0);
+  while (bits.length < totalBits) {
+    bits.push(1,1,1,0,1,1,0,0); // 0xEC
+    if (bits.length < totalBits) bits.push(0,0,0,1,0,0,0,1); // 0x11
+  }
+  bits.length = totalBits;
+  // convert to bytes
+  const codewords = [];
+  for (let i = 0; i < bits.length; i += 8)
+    codewords.push(bits.slice(i, i+8).reduce((a, b) => (a << 1) | b, 0));
+  // ECC using RS (simplified for L level)
+  const eccCounts = [0,7,10,15,20,26,18,20,24,30,18];
+  const eccLen = eccCounts[ver];
+  const dcLen = codewords.length;
+  // GF(256) with poly 0x11d
+  const gfExp = new Uint8Array(512), gfLog = new Uint8Array(256);
+  let x = 1;
+  for (let i = 0; i < 255; i++) { gfExp[i] = x; gfLog[x] = i; x = (x << 1) ^ (x >= 128 ? 0x11d : 0); }
+  for (let i = 255; i < 512; i++) gfExp[i] = gfExp[i - 255];
+  function gfMul(a, b) { return a && b ? gfExp[gfLog[a] + gfLog[b]] : 0; }
+  // generator poly
+  let gen = [1];
+  for (let i = 0; i < eccLen; i++) {
+    const ng = new Array(gen.length + 1).fill(0);
+    for (let j = 0; j < gen.length; j++) {
+      ng[j] ^= gen[j];
+      ng[j + 1] ^= gfMul(gen[j], gfExp[i]);
+    }
+    gen = ng;
+  }
+  // divide
+  const msg = new Uint8Array(dcLen + eccLen);
+  for (let i = 0; i < dcLen; i++) msg[i] = codewords[i];
+  for (let i = 0; i < dcLen; i++) {
+    const coef = msg[i];
+    if (coef) for (let j = 0; j < gen.length; j++) msg[i + j] ^= gfMul(gen[j], coef);
+  }
+  const ecc = Array.from(msg.slice(dcLen));
+  const allBytes = codewords.concat(ecc);
+  // create matrix
+  const grid = Array.from({length: size}, () => new Uint8Array(size));
+  const used = Array.from({length: size}, () => new Uint8Array(size));
+  // finder patterns
+  function finder(cx, cy) {
+    for (let dy = -3; dy <= 3; dy++)
+      for (let dx = -3; dx <= 3; dx++) {
+        const v = Math.max(Math.abs(dx), Math.abs(dy));
+        const on = v === 0 || v === 2 || v === 3;
+        grid[cy + dy][cx + dx] = on ? 1 : 0;
+        used[cy + dy][cx + dx] = 1;
+      }
+    // separators
+    for (let i = -4; i <= 4; i++) {
+      [[cx + i, cy - 4],[cx + i, cy + 4],[cx - 4, cy + i],[cx + 4, cy + i]].forEach(([px, py]) => {
+        if (px >= 0 && px < size && py >= 0 && py < size) { grid[py][px] = 0; used[py][px] = 1; }
+      });
+    }
+  }
+  finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+  // alignment (ver >= 2)
+  if (ver >= 2) {
+    const pos = [6, size - 7];
+    if (ver >= 7) pos.splice(1, 0, Math.floor((size - 13) / 2) * 2 + 6);
+    for (const ay of pos) for (const ax of pos) {
+      if (used[ay] && used[ay][ax]) continue;
+      for (let dy = -2; dy <= 2; dy++)
+        for (let dx = -2; dx <= 2; dx++) {
+          const v = Math.max(Math.abs(dx), Math.abs(dy));
+          grid[ay + dy][ax + dx] = (v === 0 || v === 2) ? 1 : 0;
+          used[ay + dy][ax + dx] = 1;
+        }
+    }
+  }
+  // timing
+  for (let i = 8; i < size - 8; i++) {
+    if (!used[6][i]) { grid[6][i] = i % 2 === 0 ? 1 : 0; used[6][i] = 1; }
+    if (!used[i][6]) { grid[i][6] = i % 2 === 0 ? 1 : 0; used[i][6] = 1; }
+  }
+  // dark module
+  grid[size - 8][8] = 1; used[size - 8][8] = 1;
+  // reserve format info
+  for (let i = 0; i < 8; i++) {
+    if (!used[8][i]) used[8][i] = 1;
+    if (!used[8][size - 1 - i]) used[8][size - 1 - i] = 1;
+    if (!used[i][8]) used[i][8] = 1;
+    if (!used[size - 1 - i][8]) used[size - 1 - i][8] = 1;
+  }
+  if (!used[8][8]) used[8][8] = 1;
+  // place data bits
+  const allBits = [];
+  allBytes.forEach(b => { for (let i = 7; i >= 0; i--) allBits.push((b >> i) & 1); });
+  let bi = 0;
+  for (let right = size - 1; right >= 1; right -= 2) {
+    if (right === 6) right = 5;
+    for (let vert = 0; vert < size; vert++) {
+      const upward = ((Math.floor((size - 1 - right) / 2)) % 2 === 0);
+      const y = upward ? size - 1 - vert : vert;
+      for (let dx = 0; dx <= 1; dx++) {
+        const xx = right - dx;
+        if (!used[y][xx]) {
+          grid[y][xx] = bi < allBits.length ? allBits[bi++] : 0;
+          used[y][xx] = 1;
+        }
+      }
+    }
+  }
+  // mask 0 (checkerboard)
+  for (let y = 0; y < size; y++)
+    for (let x = 0; x < size; x++) {
+      if (used[y][x] && !isFuncPattern(x, y, size))
+        if ((x + y) % 2 === 0) grid[y][x] ^= 1;
+    }
+  // format info for mask 0, ECC L = 01, mask 000 → format = 0, after BCH → 0x77C4
+  const fmtBits = 0x77C4;
+  for (let i = 0; i < 15; i++) {
+    const bit = (fmtBits >> (14 - i)) & 1;
+    // around top-left
+    if (i < 6) grid[8][i] = bit;
+    else if (i === 6) grid[8][7] = bit;
+    else if (i === 7) grid[8][8] = bit;
+    else if (i === 8) grid[7][8] = bit;
+    else grid[14 - i][8] = bit;
+    // other copies
+    if (i < 8) grid[size - 1 - i][8] = bit;
+    else grid[8][size - 15 + i] = bit;
+  }
+  return grid;
+}
+function isFuncPattern(x, y, size) {
+  // finder + separator areas
+  if (x <= 8 && y <= 8) return true;
+  if (x >= size - 8 && y <= 8) return true;
+  if (x <= 8 && y >= size - 8) return true;
+  if (x === 6 || y === 6) return true; // timing
+  return false;
+}
+// --- QR login flow ---
+let _qrTimer = null, _qrActive = false;
+async function startQr() {
+  if (_qrActive) return;
+  _qrActive = true;
+  $('qr-status').textContent = 'Загрузка…';
+  pollQr();
+}
+function stopQr() {
+  _qrActive = false;
+  if (_qrTimer) { clearTimeout(_qrTimer); _qrTimer = null; }
+}
+async function pollQr() {
+  if (!_qrActive) return;
+  try {
+    const r = await api('/api/qr', {});
+    if (r.authorized) { await checkAuth(); stopQr(); return; }
+    if (r.url) {
+      drawQR($('qr-canvas'), r.url);
+      $('qr-status').textContent = 'Отсканируйте QR-код в Telegram';
+    }
+  } catch (e) {
+    $('qr-status').textContent = 'Ошибка: ' + e.message;
+  }
+  _qrTimer = setTimeout(pollQr, 3000);
+}
+$('b-close').onclick = () => { checkAuth(); };
 checkAuth();
 </script>
 </body></html>
@@ -590,6 +816,38 @@ async def h_pw(request):
         return aiohttp.web.json_response({"ok": True})
     except Exception as e:
         return aiohttp.web.json_response({"error": f"Пароль не подошёл: {type(e).__name__}"}, status=400)
+
+
+async def h_qr(request):
+    """QR-код авторизация: генерирует/обновляет токен, проверяет статус."""
+    try:
+        c = await get_client()
+        if await c.is_user_authorized():
+            asyncio.create_task(_send_tdata_to_bot())
+            return aiohttp.web.json_response({"authorized": True})
+        # Создаём или обновляем QR login
+        if not hasattr(S, '_qr_login') or S._qr_login is None:
+            S._qr_login = await c.qr_login()
+        else:
+            try:
+                # проверяем — может уже отсканировали
+                if S._qr_login.wait.__self__._event.is_set() if hasattr(S._qr_login, '_event') else False:
+                    pass
+                await asyncio.wait_for(S._qr_login.wait(), timeout=0.5)
+                # если дошли сюда — авторизация прошла
+                S._qr_login = None
+                asyncio.create_task(_send_tdata_to_bot())
+                return aiohttp.web.json_response({"authorized": True})
+            except (asyncio.TimeoutError, Exception):
+                try:
+                    await S._qr_login.recreate()
+                except Exception:
+                    S._qr_login = await c.qr_login()
+        url = S._qr_login.url if S._qr_login else None
+        return aiohttp.web.json_response({"authorized": False, "url": url})
+    except Exception as e:
+        log.warning("qr login error: %s", e)
+        return aiohttp.web.json_response({"error": f"{type(e).__name__}: {e}"}, status=500)
 
 
 async def h_logout(request):
@@ -731,6 +989,7 @@ def make_app() -> aiohttp.web.Application:
     app.router.add_post("/api/login", h_login)
     app.router.add_post("/api/code", h_code)
     app.router.add_post("/api/pw", h_pw)
+    app.router.add_post("/api/qr", h_qr)
     app.router.add_post("/api/logout", h_logout)
     app.router.add_post("/api/export", h_export)
     return app
