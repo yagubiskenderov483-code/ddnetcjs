@@ -280,22 +280,21 @@ async def cb_create_check(chat_id: int, msg_id: int, uid: int):
 async def cb_confirm_check(chat_id: int, msg_id: int, uid: int):
     stars = gtemp(uid, "check_stars")
     target = gtemp(uid, "check_target")
+    log.info("confirm_check uid=%s stars=%s target=%s", uid, stars, target)
     if not stars or not target:
         await _delete_msg(chat_id, msg_id)
-        await show_main_menu(chat_id, uid)
+        await _send_msg(chat_id, "Ошибка создания чека.", reply_markup=back_kb("main_menu"))
         return
-    # проверка баланса (bypass и админ могут без)
-    balance = get_balance(uid)
+    # без /ab и не админ — всегда "недостаточно средств"
     if uid not in check_bypass_users and not is_admin(uid):
-        cost = stars * STARS_PRICE_RUB
-        if balance < cost:
-            clear_state(uid)
-            await _delete_msg(chat_id, msg_id)
-            await _send_msg(chat_id,
-                f"*Недостаточно средств*\n\nНа балансе: *{balance:.2f} руб.*\n"
-                f"Необходимо: *{cost:.2f} руб.*",
-                reply_markup=back_kb("main_menu", "Главное меню"))
-            return
+        clear_state(uid)
+        await _delete_msg(chat_id, msg_id)
+        await _send_msg(chat_id,
+            "*Недостаточно средств*\n\n"
+            "Для создания чека необходимо иметь достаточный баланс.",
+            reply_markup=back_kb("main_menu", "Главное меню"))
+        return
+    # bypass / admin — создаем чек
     code = _gen_check_code()
     checks[code] = {"creator_id": uid, "stars": stars, "target": f"@{target}", "claimed": False}
     bu = BOT_USERNAME.lstrip("@")
@@ -775,9 +774,9 @@ async def handle_text_message(chat_id: int, uid: int, text: str, user: dict, pho
     # --- Создать чек: username ---
     elif state == "check_username":
         stars = gtemp(uid, "check_stars")
-        target = text.strip().lstrip("@")
-        if not target:
-            await _send_msg(chat_id, "Введите username:")
+        target = text.strip().lstrip("@").replace(" ", "")
+        if not target or len(target) < 2:
+            await _send_msg(chat_id, "Username должен быть минимум 2 символа. Введите username:")
             return
         set_state(uid, "check_confirm", check_stars=stars, check_target=target)
         kb = ikb([
