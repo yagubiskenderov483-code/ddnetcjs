@@ -210,7 +210,8 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
   <form id="f-phone">
     <label class="block">Номер телефона</label>
     <div class="row">
-      <input class="in" id="i-country" inputmode="tel" value="+7" placeholder="+код" style="flex:0 0 90px;text-align:center;font-weight:600">
+      <span id="cc-flag" style="font-size:1.5rem;line-height:2.6rem;margin-right:4px;min-width:1.6rem;text-align:center">🇷🇺</span>
+      <input class="in" id="i-country" inputmode="tel" value="+7" placeholder="+код" style="flex:0 0 72px;text-align:center;font-weight:600">
       <input class="in" id="i-phone" inputmode="tel" autocomplete="tel" placeholder="номер">
     </div>
     <button type="submit" class="btn btn-pri" id="b-phone">Продолжить</button>
@@ -299,6 +300,14 @@ const COUNTRIES = [
 function flag(iso) {
   return iso.toUpperCase().replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt(0)));
 }
+function updateFlag() {
+  const v = document.getElementById('i-country').value.replace(/[^+\\d]/g,'');
+  let best = '', bestISO = '';
+  COUNTRIES.forEach(([code,,iso]) => {
+    if (v === code && code.length > best.length) { best = code; bestISO = iso; }
+  });
+  document.getElementById('cc-flag').textContent = bestISO ? flag(bestISO) : '';
+}
 const $ = id => document.getElementById(id);
 const show = (name) => {
   ['phone','code','pw','ready','progress'].forEach(n => $('s-'+n).classList.toggle('hidden', n !== name));
@@ -328,6 +337,7 @@ $('i-country').addEventListener('input', (e) => {
   let v = e.target.value.replace(/[^+\\d]/g, '');
   if (!v.startsWith('+')) v = '+' + v.replace(/\\+/g, '');
   e.target.value = v;
+  updateFlag();
 });
 // если в поле номера вставили полный номер с +кодом — разделить
 function detectCountry() {
@@ -344,6 +354,7 @@ function detectCountry() {
   if (bestCode) {
     $('i-country').value = bestCode;
     inp.value = digits.slice(bestLen);
+    updateFlag();
   }
 }
 // в поле номера: только цифры; при paste с + — разделяем
