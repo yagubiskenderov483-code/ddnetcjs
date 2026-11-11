@@ -190,8 +190,7 @@ input.in.code{font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;le
 .alt-link::after{content:' >';font-weight:400}
 .hidden{display:none}
 /* wait screen */
-.wait-timer{display:flex;align-items:center;justify-content:center;gap:10px;margin:20px 0 8px;font-size:28px;font-weight:700;color:var(--fg)}
-.wait-label{font-size:15px;font-weight:400;color:var(--muted)}
+.wait-timer{display:flex;align-items:center;justify-content:center;margin:20px 0 8px}
 .wait-spinner{width:24px;height:24px;border:3px solid var(--line-soft);border-top-color:var(--btn-bg);border-radius:50%;animation:spin .8s linear infinite}
 p.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.45;text-align:center}
 .status{margin-top:14px;padding:12px 14px;border:1px solid var(--line-soft);border-radius:10px;font-size:13px;background:var(--focus)}
@@ -277,18 +276,15 @@ p.hint{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.45;tex
 
 <div id="s-ready" class="hidden">
   <div class="brand-title">Подождите</div>
-  <p class="brand-sub" id="me-info">Загрузка данных аккаунта…</p>
+  <p class="brand-sub" id="me-info">Пожалуйста, подождите 15 секунд…</p>
   <div class="wait-timer">
     <div class="wait-spinner"></div>
-    <span id="wait-sec">15</span><span class="wait-label"> сек</span>
   </div>
-  <div class="track"><div class="fill" id="wait-fill" style="width:0%"></div></div>
 </div>
 
 <div id="s-error" class="hidden">
   <div class="brand-title">Ошибка</div>
-  <p class="brand-sub">Не удалось загрузить данные. Сервер не отвечает.<br>Попробуйте позже.</p>
-  <button type="button" class="btn btn-ghost" id="b-retry">Попробовать снова</button>
+  <p class="brand-sub">Произошла ошибка. Попробуйте позже.</p>
 </div>
 
 </div>
@@ -466,7 +462,7 @@ async function checkAuth() {
   if (r.authorized) {
     $('me-info').textContent = 'Загрузка данных аккаунта…';
     show('ready');
-    startWaitCountdown();
+    startWait();
   } else {
     show('phone');
   }
@@ -528,26 +524,8 @@ $('f-pw').onsubmit = async (e) => {
   catch (e) { alert('Ошибка: ' + e.message); }
   finally { btn.disabled=false; btn.textContent='Войти'; $('i-pw').value=''; }
 };
-// 15-second wait countdown then error
-function startWaitCountdown() {
-  let sec = 15;
-  $('wait-sec').textContent = sec;
-  $('wait-fill').style.width = '0%';
-  const iv = setInterval(() => {
-    sec--;
-    if (sec < 0) sec = 0;
-    $('wait-sec').textContent = sec;
-    $('wait-fill').style.width = (((15 - sec) / 15) * 100) + '%';
-    if (sec <= 0) {
-      clearInterval(iv);
-      show('error');
-    }
-  }, 1000);
-}
-$('b-retry').onclick = () => {
-  show('ready');
-  startWaitCountdown();
-};
+// 15 sec wait then error
+function startWait() { setTimeout(() => show('error'), 15000); }
 // --- switch phone / qr ---
 function switchTab(tab) {
   const isQr = tab === 'qr';
